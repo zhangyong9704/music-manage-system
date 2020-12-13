@@ -32,7 +32,7 @@
                     <input class="crop-input" type="file" name="image" accept="image/*" @change="setImage"/>
                 </div>
             </div>
-        
+
             <el-dialog title="裁剪图片" :visible.sync="dialogVisible" width="30%">
                 <vue-cropper ref='cropper' :src="imgSrc" :ready="cropImage" :zoom="cropImage" :cropmove="cropImage" style="width:100%;height:300px;"></vue-cropper>
                 <span slot="footer" class="dialog-footer">
@@ -76,6 +76,7 @@
             },
             cropImage () {
                 this.cropImg = this.$refs.cropper.getCroppedCanvas().toDataURL();
+                console.log("ImageDataURL:"+this.cropImg);
             },
             cancelCrop(){
                 this.dialogVisible = false;
@@ -105,7 +106,7 @@
         font-size: 22px;
         color: #1f2f3d;
     }
-    .pre-img{   
+    .pre-img{
         width: 100px;
         height: 100px;
         background: #f8f8f8;

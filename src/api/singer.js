@@ -17,10 +17,11 @@ export default {
     /*
     分页获取歌手信息
      */
-    getSingerPagesInfo(query){
+    getSingerPagesInfo(query,singerQueryVo){
         return request({
             url:`/singer/querySingers/${query.pageIndex}/${query.pageSize}`,
             method:'post',
+            data: singerQueryVo,
         })
     },
 

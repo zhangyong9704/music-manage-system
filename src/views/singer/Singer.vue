@@ -12,7 +12,7 @@
                 <el-button type="danger" icon="el-icon-delete" class="handle-del mr10" @click="delAllSelection">批量删除</el-button>
                 <el-button type="warning" icon="el-icon-user-solid" class="handle-add mr10" @click="addSinger">新增歌手</el-button>
                 <el-input v-model="singerQueryVo.name" placeholder="用户名" class="handle-input mr10"></el-input>
-                <el-select v-model="singerQueryVo.sex" placeholder="类别" class="handle-select mr10">
+                <el-select v-model="singerQueryVo.sex" placeholder="类别" clearable  class="handle-select mr10">
                     <el-option key="0" label="女" value="0"></el-option>
                     <el-option key="1" label="男" value="1"></el-option>
                     <el-option key="2" label="组合" value="2"></el-option>
@@ -28,9 +28,9 @@
                 header-cell-class-name="table-header"
                 @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="80" align="center"></el-table-column>
+                <el-table-column prop="id" label="ID" width="180" align="center"></el-table-column>
                 <el-table-column prop="name" label="歌手" align="center"></el-table-column>
-                <el-table-column label="类别" width="55" align="center">
+                <el-table-column label="类别" width="65" align="center">
                     <template slot-scope="scope">
                         <el-tag type='primary'>{{getSexType(scope.row.sex)}}</el-tag>
                     </template>
@@ -56,7 +56,7 @@
                 <el-table-column prop="" label="歌手简介" align="center">
                     <template slot-scope="scope">
                         <el-popover placement="top-start" title="歌手简介"
-                                width="400" trigger="click" :content="scope.row.introduction">
+                                width="400" trigger="click" :content="''===scope.row.introduction?'暂无介绍':scope.row.introduction">
                             <el-button class="blue" type="text" slot="reference">简介详情</el-button>
                         </el-popover>
                     </template>
@@ -109,7 +109,11 @@
         <el-dialog title="添加歌手信息" :visible.sync="addVisible" width="40%" center>
             <el-form :model="addSingerForm" ref="addSingerForm" label-width="80px">
                 <el-form-item prop="name" label="歌手名称" size="mini">
-                    <el-input v-model="addSingerForm.name" placeholder="歌手名"></el-input>
+                    <el-input v-model="addSingerForm.name" placeholder="歌手名"
+                              :rules="[
+                                      { required: true, message: '请输入歌手名称', trigger: 'blur' },
+                                    ]"
+                    ></el-input>
                 </el-form-item>
                 <el-form-item label="性别" size="mini">
                     <el-radio-group v-model="addSingerForm.sex">
@@ -120,7 +124,13 @@
                     </el-radio-group>
                 </el-form-item>
                 <el-form-item prop="birth" label="生日" size="mini">
-                    <el-date-picker type="date" placeholder="出生日期" v-model="addSingerForm.birth" style="width:100%"></el-date-picker>
+                    <el-date-picker type="date" placeholder="出生日期"
+                                    v-model="addSingerForm.birth"
+                                    style="width:100%"
+                                    :rules="[
+                                      { required: true, message: '请选择出生日期', trigger: 'blur' },
+                                    ]"
+                    ></el-date-picker>
                 </el-form-item>
                 <el-form-item prop="location" label="地区" size="mini">
                     <el-input v-model="addSingerForm.location" placeholder="地区"></el-input>
@@ -207,6 +217,7 @@ export default {
         fetchData() {
             this.Loading = true ;
             Singer.getSingerPagesInfo(this.query,this.singerQueryVo).then(res => {
+                debugger
                 this.tableData = res.data.singer;
                 this.pageTotal = res.data.total || 20;
             });

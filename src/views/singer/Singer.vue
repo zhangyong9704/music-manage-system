@@ -38,8 +38,8 @@
                 <el-table-column label="头像" align="center">
                     <template slot-scope="scope">
                        <el-image class="table-td-thumb" fit="contain"
-                            src="https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg"
-                            :preview-src-list="srcList">
+                            :src="HOST+scope.row.pic"
+                            :preview-src-list="[HOST+scope.row.pic]">
                            <div slot="error" class="image-slot">
                                <i class="el-icon-picture-outline"></i>
                            </div>
@@ -110,26 +110,21 @@
             <el-form :model="addSingerForm" ref="addSingerForm" label-width="80px">
                 <el-form-item prop="name" label="歌手名称" size="mini">
                     <el-input v-model="addSingerForm.name" placeholder="歌手名"
-                              :rules="[
-                                      { required: true, message: '请输入歌手名称', trigger: 'blur' },
-                                    ]"
                     ></el-input>
                 </el-form-item>
                 <el-form-item label="性别" size="mini">
                     <el-radio-group v-model="addSingerForm.sex">
-                        <el-radio :label="0">女</el-radio>
-                        <el-radio :label="1">男</el-radio>
-                        <el-radio :label="2">组合</el-radio>
-                        <el-radio :label="3">不明</el-radio>
+                        <el-radio  label="0" >女</el-radio>
+                        <el-radio  label="1" >男</el-radio>
+                        <el-radio  label="2" >组合</el-radio>
+                        <el-radio  label="3" >不明</el-radio>
                     </el-radio-group>
                 </el-form-item>
                 <el-form-item prop="birth" label="生日" size="mini">
                     <el-date-picker type="date" placeholder="出生日期"
                                     v-model="addSingerForm.birth"
+                                    value-format="yyyy-MM-dd HH:mm:ss"
                                     style="width:100%"
-                                    :rules="[
-                                      { required: true, message: '请选择出生日期', trigger: 'blur' },
-                                    ]"
                     ></el-date-picker>
                 </el-form-item>
                 <el-form-item prop="location" label="地区" size="mini">
@@ -144,7 +139,7 @@
                 <!-- 讲师头像 -->
                 <el-form-item label="歌手头像">
                     <!-- 头衔缩略图 -->
-                    <pan-thumb :image="defaultSrc"/>
+                    <pan-thumb :image="tempSrc"/>
                     <!-- 文件上传按钮 -->
                     <el-button type="primary" icon="el-icon-upload" @click="imagecropperShow=true">更换头像
                     </el-button>
@@ -155,12 +150,12 @@
                     @close：关闭上传组件
                     @crop-upload-success：上传成功后的回调 -->
                     <image-cropper v-show="imagecropperShow" :width="300" :height="300" :key="imagecropperKey"
-                                   :url="BASE_API+'/service-oss/oss-upload/upload'" field="file" @close="close" @crop-upload-success="cropSuccess"/>
+                                   :url="uploadURL" field="file" @close="close" @crop-upload-success="cropSuccess"/>
                 </el-form-item>
             </el-form>
             <span slot="footer">
                 <el-button  @click="addVisible = false">取消</el-button>
-                <el-button  type="primary" @click="">确定</el-button>
+                <el-button  type="primary" @click="confirmAddSinger">确定</el-button>
             </span>
         </el-dialog>
 
@@ -172,9 +167,9 @@
 
 <script>
 import Singer from '@/api/singer';
+import { getSexType } from '@/api/common/commonUtils';
 import ImageCropper from '@/components/ImageCropper'
 import PanThumb from '@/components/PanThumb'
-import { getSexType,convertBase64UrlToBlob } from '@/api/common/commonUtils';
 export default {
     name: 'singer',
     components: {
@@ -188,8 +183,7 @@ export default {
                 pageIndex: 1,
                 pageSize: 8,
             },
-            BASE_API : "",
-            singerQueryVo :{},//歌手查询条件
+            singerQueryVo : {},//歌手查询条件
             tableData: [],
             multipleSelection: [],
             delList: [],
@@ -200,7 +194,10 @@ export default {
             addSingerForm:{},   //新增歌手对象
             idx: -1,
             id: -1,
-            defaultSrc: "https://guili-ptcture.oss-cn-beijing.aliyuncs.com/picture/c851d1cb-f053-4ae4-94ce-205b5321304a.png",
+            HOST:this.$store.state.HOST,
+            uploadURL:this.$store.state.UPLOADURL,  //歌手上传路径
+            defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",
+            tempSrc:'',
             imagecropperShow : false,  //上传时弹框组件是否显示
             imagecropperKey : 0 ,
             srcList: [
@@ -217,7 +214,6 @@ export default {
         fetchData() {
             this.Loading = true ;
             Singer.getSingerPagesInfo(this.query,this.singerQueryVo).then(res => {
-                debugger
                 this.tableData = res.data.singer;
                 this.pageTotal = res.data.total || 20;
             });
@@ -238,12 +234,17 @@ export default {
             // 二次确认删除
             this.$confirm('确定要删除吗？', '提示', {
                 type: 'warning'
-            })
-                .then(() => {
-                    this.$message.success('删除成功');
-                    this.tableData.splice(index, 1);
+            }).then(() => {
+                 Singer.deleteSingerByID(row.id).then(res=>{
+                     if (res && res.code===200){
+                         this.$message.success(res.message);
+                         this.fetchData();
+                     }
+                     }).catch(()=>{})
                 })
-                .catch(() => {});
+              .catch(() => {
+                  this.$message.info("已取消删除操作");
+              });
         },
         // 多选操作
         handleSelectionChange(val) {
@@ -271,12 +272,31 @@ export default {
             this.$message.success(`修改第 ${this.idx + 1} 行成功`);
             this.$set(this.tableData, this.idx, this.form);
         },
+        //处理图像返回地址
+        getImageUrl(scope){
+            console.log("addr:"+this.$store.state.HOST+scope.row.pic);
+            return this.$store.state.HOST+scope.row.pic
+        },
 
         //新增歌手
         addSinger(){
+            this.tempSrc='';
             this.addSingerForm = {}
-            this.cropImg = this.defaultSrc;
+            this.tempSrc = this.defaultSrc;
             this.addVisible = true;
+        },
+        //新增歌手确定保存
+        confirmAddSinger(){
+            Singer.saveAddSinger(this.addSingerForm).then(res=>{
+                if (res && res.code===200){
+                    this.$message.success(res.message);
+                    this.addVisible = false;
+                    this.addSingerForm = {};
+                    this.fetchData();
+                }
+            }).catch(err=>{
+                this.$message.success(res.message);
+            })
         },
         // 分页导航
         handlePageChange(val) {
@@ -286,7 +306,8 @@ export default {
         //图片上传成功
         cropSuccess(data){ //上传保存成功后调用  data 直接进行了封装，==》response.data
             this.imagecropperShow = false; //先关闭弹窗
-            this.addSingerForm.pic = data.url;
+            this.addSingerForm.pic = data.path;
+            this.tempSrc = this.$store.state.HOST + data.path;
             // 上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
             this.imagecropperKey = this.imagecropperKey + 1 ;
         },

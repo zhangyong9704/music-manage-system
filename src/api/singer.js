@@ -25,5 +25,23 @@ export default {
         })
     },
 
+    //确定保存新增歌手信息
+    saveAddSinger(singer) {
+        return request({
+            url:`/singer/add`,
+            method:'post',
+            data:singer
+        })
+    },
+
+    //根据ID删除歌手信息
+    deleteSingerByID(id){
+        return request({
+            url:`/singer/deleteSinger/${id}`,
+            method:'delete',
+        })
+
+    }
+
 
 }

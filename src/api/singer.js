@@ -40,6 +40,13 @@ export default {
             url:`/singer/deleteSinger/${id}`,
             method:'delete',
         })
+    },
+
+    deleteMultipleSelection(params=[]){
+        return request({
+            url:`/singer/deleteBatch/${params}`,
+            method:'delete',
+        })
 
     }
 

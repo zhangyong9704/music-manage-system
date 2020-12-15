@@ -28,9 +28,9 @@
                 header-cell-class-name="table-header"
                 @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="180" align="center"></el-table-column>
+                <el-table-column prop="id" label="ID" width="170" align="center"></el-table-column>
                 <el-table-column prop="name" label="歌手" align="center"></el-table-column>
-                <el-table-column label="类别" width="65" align="center">
+                <el-table-column label="类别" width="60" align="center">
                     <template slot-scope="scope">
                         <el-tag type='primary'>{{getSexType(scope.row.sex)}}</el-tag>
                     </template>
@@ -61,17 +61,27 @@
                         </el-popover>
                     </template>
                 </el-table-column>
+                <el-table-column label="歌曲管理" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="success" plain round
+                                icon="el-icon-position" size="mini"
+                                @click="handleEdit(scope.$index, scope.row)"
+                        >歌曲管理</el-button>
+                    </template>
+                </el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
                             type="primary" plain round
                             icon="el-icon-edit"
+                            size="mini"
                             @click="handleEdit(scope.$index, scope.row)"
                         >编辑</el-button>
                         <el-button
                             type="danger" plain round
                             icon="el-icon-delete"
                             class="red"
+                            size="mini"
                             @click="handleDelete(scope.$index, scope.row)"
                         >删除</el-button>
                     </template>
@@ -231,8 +241,7 @@ export default {
         },
         // 删除操作
         handleDelete(index, row) {
-            // 二次确认删除
-            this.$confirm('确定要删除吗？', '提示', {
+            this.$confirm('确定要删除吗？', '提示', { // 二次确认删除
                 type: 'warning'
             }).then(() => {
                  Singer.deleteSingerByID(row.id).then(res=>{
@@ -251,14 +260,19 @@ export default {
             this.multipleSelection = val;
         },
         delAllSelection() {
-            const length = this.multipleSelection.length;
-            let str = '';
-            this.delList = this.delList.concat(this.multipleSelection);
-            for (let i = 0; i < length; i++) {
-                str += this.multipleSelection[i].name + ' ';
+            let str = [];
+            for (let i = 0; i < this.multipleSelection.length; i++) {
+                str.push(this.multipleSelection[i].id);
             }
-            this.$message.error(`删除了${str}`);
-            this.multipleSelection = [];
+            Singer.deleteMultipleSelection(str).then(res=>{
+                if (res && res.code===200){
+                    this.$message.success(res.message);
+                    this.multipleSelection = [];
+                    this.fetchData();
+                }
+            }).catch(err=>{
+                this.$message.error(err.message);
+            })
         },
         // 编辑操作
         handleEdit(index, row) {

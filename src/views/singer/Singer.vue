@@ -75,7 +75,7 @@
                             type="primary" plain round
                             icon="el-icon-edit"
                             size="mini"
-                            @click="handleEdit(scope.$index, scope.row)"
+                            @click="addAndEditCommonEntrance('edit',scope.$index, scope.row)"
                         >编辑</el-button>
                         <el-button
                             type="danger" plain round
@@ -116,14 +116,14 @@
         </el-dialog>
 
         <!--添加歌手-->
-        <el-dialog title="添加歌手信息" :visible.sync="addVisible" width="40%" center>
-            <el-form :model="addSingerForm" ref="addSingerForm" label-width="80px">
+        <el-dialog :title="title" :visible.sync="isVisible" width="40%" center>
+            <el-form :model="singerForm" ref="singerForm" label-width="80px">
                 <el-form-item prop="name" label="歌手名称" size="mini">
-                    <el-input v-model="addSingerForm.name" placeholder="歌手名"
+                    <el-input v-model="singerForm.name" placeholder="歌手名"
                     ></el-input>
                 </el-form-item>
                 <el-form-item label="性别" size="mini">
-                    <el-radio-group v-model="addSingerForm.sex">
+                    <el-radio-group v-model="singerForm.sex">
                         <el-radio  label="0" >女</el-radio>
                         <el-radio  label="1" >男</el-radio>
                         <el-radio  label="2" >组合</el-radio>
@@ -132,18 +132,18 @@
                 </el-form-item>
                 <el-form-item prop="birth" label="生日" size="mini">
                     <el-date-picker type="date" placeholder="出生日期"
-                                    v-model="addSingerForm.birth"
+                                    v-model="singerForm.birth"
                                     value-format="yyyy-MM-dd HH:mm:ss"
                                     style="width:100%"
                     ></el-date-picker>
                 </el-form-item>
                 <el-form-item prop="location" label="地区" size="mini">
-                    <el-input v-model="addSingerForm.location" placeholder="地区"></el-input>
+                    <el-input v-model="singerForm.location" placeholder="地区"></el-input>
                 </el-form-item>
                 <el-form-item prop="introduction" label="简介" size="mini">
-                    <el-input v-model="addSingerForm.introduction"
+                    <el-input v-model="singerForm.introduction"
                               placeholder="简介" type="textarea"
-                              maxlength="120" show-word-limit>
+                              maxlength="240" show-word-limit>
                     </el-input>
                 </el-form-item>
                 <!-- 讲师头像 -->
@@ -164,7 +164,7 @@
                 </el-form-item>
             </el-form>
             <span slot="footer">
-                <el-button  @click="addVisible = false">取消</el-button>
+                <el-button  @click="isVisible = false">取消</el-button>
                 <el-button  type="primary" @click="confirmAddSinger">确定</el-button>
             </span>
         </el-dialog>
@@ -198,10 +198,11 @@ export default {
             multipleSelection: [],
             delList: [],
             editVisible: false,
-            addVisible: false,
+            isVisible: false,
             pageTotal: 0,
             form: {},
-            addSingerForm:{},   //新增歌手对象
+            title :'',
+            singerForm:{},   //歌手弹框对象
             idx: -1,
             id: -1,
             HOST:this.$store.state.HOST,
@@ -259,6 +260,7 @@ export default {
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
+        //批量删除
         delAllSelection() {
             let str = [];
             for (let i = 0; i < this.multipleSelection.length; i++) {
@@ -274,44 +276,61 @@ export default {
                 this.$message.error(err.message);
             })
         },
+
+        //新增和编辑统一公共统一调用入口
+        addAndEditCommonEntrance(identification,index,row){
+            if ("add"===identification){ //调用添加方法
+                this.title = '添加歌手信息'
+                alert("调用添加方法")
+            }
+            if ('edit'===identification){  //调用编辑的方法
+                this.title = '编辑歌手信息'
+                this.handleEdit(index, row)
+            }
+
+        },
+
         // 编辑操作
         handleEdit(index, row) {
-            this.idx = index;
-            this.form = row;
-            this.editVisible = true;
+            this.singerForm = {}
+            this.singerForm = row
+            this.tempSrc = this.getImageUrl(row.pic); //处理图像路径问题
+            this.isVisible = true;
         },
         // 保存编辑
         saveEdit() {
-            this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-            this.$set(this.tableData, this.idx, this.form);
-        },
-        //处理图像返回地址
-        getImageUrl(scope){
-            console.log("addr:"+this.$store.state.HOST+scope.row.pic);
-            return this.$store.state.HOST+scope.row.pic
+            Singer.updateSinger(this.singerForm).then(res=>{
+                if (res && res.code===200){
+                    this.$message.success(res.message);
+                    this.isVisible = false;
+                    this.singerForm={};
+                }
+            }).catch(err=>{
+                this.$message.error(err.message);
+            })
         },
 
         //新增歌手
         addSinger(){
             this.tempSrc='';
-            this.addSingerForm = {}
+            this.singerForm = {}
             this.tempSrc = this.defaultSrc;
-            this.addVisible = true;
+            this.isVisible = true;
         },
         //新增歌手确定保存
         confirmAddSinger(){
-            Singer.saveAddSinger(this.addSingerForm).then(res=>{
+            Singer.saveAddSinger(this.singerForm).then(res=>{
                 if (res && res.code===200){
                     this.$message.success(res.message);
-                    this.addVisible = false;
-                    this.addSingerForm = {};
+                    this.isVisible = false;
+                    this.singerForm = {};
                     this.fetchData();
                 }
             }).catch(err=>{
                 this.$message.success(res.message);
             })
         },
+
         // 分页导航
         handlePageChange(val) {
             this.$set(this.query, 'pageIndex', val);
@@ -320,14 +339,19 @@ export default {
         //图片上传成功
         cropSuccess(data){ //上传保存成功后调用  data 直接进行了封装，==》response.data
             this.imagecropperShow = false; //先关闭弹窗
-            this.addSingerForm.pic = data.path;
-            this.tempSrc = this.$store.state.HOST + data.path;
+            this.singerForm.pic = data.path;
+            this.tempSrc = this.getImageUrl(data.path);
             // 上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
             this.imagecropperKey = this.imagecropperKey + 1 ;
         },
-        close(){  //关闭组件显示
+        //上传图片关闭组件显示
+        close(){
             this.imagecropperShow = false;
             this.imagecropperKey = this.imagecropperKey + 1 ;  //保证当前组件不会进行复用，显示已经上传成功
+        },
+        //处理图像返回地址
+        getImageUrl(url){
+            return this.$store.state.HOST+url;
         },
     }
 };

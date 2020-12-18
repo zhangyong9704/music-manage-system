@@ -42,12 +42,21 @@ export default {
         })
     },
 
+    //批量删除操作
     deleteMultipleSelection(params=[]){
         return request({
             url:`/singer/deleteBatch/${params}`,
             method:'delete',
         })
+    },
 
+    //修改歌手信息
+    updateSinger(singer){
+        return request({
+            url:`/singer/update`,
+            method:'put',
+            data:singer
+        })
     }
 
 

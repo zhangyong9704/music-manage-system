@@ -57,6 +57,17 @@ export default {
             method:'put',
             data:singer
         })
+    },
+
+    //删除上次图片
+    deletePreviousCover(filePath){
+        return request({
+            url:`/singer/delete-upload`,
+            method:'post',
+            params: {
+                filePath
+            }
+        })
     }
 
 

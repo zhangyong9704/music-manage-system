@@ -10,7 +10,7 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="danger" icon="el-icon-delete" class="handle-del mr10" @click="delAllSelection">批量删除</el-button>
-                <el-button type="warning" icon="el-icon-user-solid" class="handle-add mr10" @click="addSinger">新增歌手</el-button>
+                <el-button type="warning" icon="el-icon-user-solid" class="handle-add mr10" @click="addAndEditCommonEntrance('add')">新增歌手</el-button>
                 <el-input v-model="singerQueryVo.name" placeholder="用户名" class="handle-input mr10"></el-input>
                 <el-select v-model="singerQueryVo.sex" placeholder="类别" clearable  class="handle-select mr10">
                     <el-option key="0" label="女" value="0"></el-option>
@@ -99,24 +99,8 @@
             </div>
         </div>
 
-        <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="40%">
-            <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="用户名">
-                    <el-input v-model="form.name"></el-input>
-                </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
-                </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
-            </span>
-        </el-dialog>
-
-        <!--添加歌手-->
-        <el-dialog :title="title" :visible.sync="isVisible" width="40%" center>
+        <!--添加编辑歌手-->
+        <el-dialog :title="title" :visible.sync="isVisible" width="40%" center :show-close="isEditCancel">
             <el-form :model="singerForm" ref="singerForm" label-width="80px">
                 <el-form-item prop="name" label="歌手名称" size="mini">
                     <el-input v-model="singerForm.name" placeholder="歌手名"
@@ -124,10 +108,10 @@
                 </el-form-item>
                 <el-form-item label="性别" size="mini">
                     <el-radio-group v-model="singerForm.sex">
-                        <el-radio  label="0" >女</el-radio>
-                        <el-radio  label="1" >男</el-radio>
-                        <el-radio  label="2" >组合</el-radio>
-                        <el-radio  label="3" >不明</el-radio>
+                        <el-radio  :label="0" >女</el-radio>
+                        <el-radio  :label="1" >男</el-radio>
+                        <el-radio  :label="2" >组合</el-radio>
+                        <el-radio  :label="3" >不明</el-radio>
                     </el-radio-group>
                 </el-form-item>
                 <el-form-item prop="birth" label="生日" size="mini">
@@ -151,7 +135,7 @@
                     <!-- 头衔缩略图 -->
                     <pan-thumb :image="tempSrc"/>
                     <!-- 文件上传按钮 -->
-                    <el-button type="primary" icon="el-icon-upload" @click="imagecropperShow=true">更换头像
+                    <el-button type="primary" icon="el-icon-upload" @click="imageCropperShow=true">更换头像
                     </el-button>
                     <!--
                     v-show：是否显示上传组件
@@ -159,13 +143,13 @@
                     :url：后台上传的url地址
                     @close：关闭上传组件
                     @crop-upload-success：上传成功后的回调 -->
-                    <image-cropper v-show="imagecropperShow" :width="300" :height="300" :key="imagecropperKey"
+                    <image-cropper v-show="imageCropperShow" :width="300" :height="300" :key="imageCropperKey"
                                    :url="uploadURL" field="file" @close="close" @crop-upload-success="cropSuccess"/>
                 </el-form-item>
             </el-form>
             <span slot="footer">
-                <el-button  @click="isVisible = false">取消</el-button>
-                <el-button  type="primary" @click="confirmAddSinger">确定</el-button>
+                <el-button  @click="isVisible = false" :disabled="!isEditCancel">取消</el-button>
+                <el-button  type="primary" @click="saveCommonEntrance(flags)">确定</el-button>
             </span>
         </el-dialog>
 
@@ -187,30 +171,28 @@ export default {
     },
     data() {
         return {
-            getSexType:getSexType,
+            getSexType:getSexType, //返回性别类型
             Loading: true, // 是否显示loading信息
-            query: {
+            query: {   //分页信息
                 pageIndex: 1,
                 pageSize: 8,
             },
             singerQueryVo : {},//歌手查询条件
-            tableData: [],
-            multipleSelection: [],
-            delList: [],
-            editVisible: false,
+            tableData: [],  //表格数据
+            multipleSelection: [],  //多选
             isVisible: false,
             pageTotal: 0,
-            form: {},
-            title :'',
+            title :'',   //新增编辑标题
+            flags : '',  //区分新增和编辑
+            isEditCancel:true, //用于编辑时存储上文件路径
             singerForm:{},   //歌手弹框对象
-            idx: -1,
             id: -1,
             HOST:this.$store.state.HOST,
             uploadURL:this.$store.state.UPLOADURL,  //歌手上传路径
-            defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",
+            defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",  //默认背景
             tempSrc:'',
-            imagecropperShow : false,  //上传时弹框组件是否显示
-            imagecropperKey : 0 ,
+            imageCropperShow : false,  //上传时弹框组件是否显示
+            imageCropperKey : 0 ,  //
             srcList: [
                 'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg',
                 'https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg'
@@ -281,15 +263,26 @@ export default {
         addAndEditCommonEntrance(identification,index,row){
             if ("add"===identification){ //调用添加方法
                 this.title = '添加歌手信息'
-                alert("调用添加方法")
+                this.flags = 'add'
+                this.addSinger()
             }
             if ('edit'===identification){  //调用编辑的方法
                 this.title = '编辑歌手信息'
+                this.flags = 'edit'
                 this.handleEdit(index, row)
             }
-
         },
 
+        //新增和保存的统一路径调用入口
+        saveCommonEntrance(identification,index,row){
+            if ("add"===identification){ //调用添加方法
+                debugger
+                this.confirmAddSinger()
+            }
+            if ('edit'===identification){  //调用编辑的方法
+                this.saveEdit();
+            }
+        },
         // 编辑操作
         handleEdit(index, row) {
             this.singerForm = {}
@@ -309,7 +302,6 @@ export default {
                 this.$message.error(err.message);
             })
         },
-
         //新增歌手
         addSinger(){
             this.tempSrc='';
@@ -327,10 +319,9 @@ export default {
                     this.fetchData();
                 }
             }).catch(err=>{
-                this.$message.success(res.message);
+                this.$message.success(err.message);
             })
         },
-
         // 分页导航
         handlePageChange(val) {
             this.$set(this.query, 'pageIndex', val);
@@ -338,16 +329,29 @@ export default {
         },
         //图片上传成功
         cropSuccess(data){ //上传保存成功后调用  data 直接进行了封装，==》response.data
-            this.imagecropperShow = false; //先关闭弹窗
-            this.singerForm.pic = data.path;
-            this.tempSrc = this.getImageUrl(data.path);
-            // 上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
-            this.imagecropperKey = this.imagecropperKey + 1 ;
+            if (data.path){
+                if ('edit'===this.flags){   //编辑功能删除先前图片
+                    //todo 删除对应图片,上次保存图片的位置
+                    Singer.deletePreviousCover(this.singerForm.pic).then((res)=>{
+                        if (res && res.code ===200){
+                            this.$message.success(res.message);
+                        }
+                    }).catch(err=>{
+                        this.$message.success(err.message);
+                    })
+                }
+                this.imageCropperShow = false; //先关闭弹窗
+                this.singerForm.pic = data.path;
+                this.tempSrc = this.getImageUrl(data.path);
+                // 上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
+                this.imageCropperKey = this.imageCropperKey + 1 ;
+                this.isEditCancel = false
+            }
         },
         //上传图片关闭组件显示
         close(){
-            this.imagecropperShow = false;
-            this.imagecropperKey = this.imagecropperKey + 1 ;  //保证当前组件不会进行复用，显示已经上传成功
+            this.imageCropperShow = false;
+            this.imageCropperKey = this.imageCropperKey + 1 ;  //保证当前组件不会进行复用，显示已经上传成功
         },
         //处理图像返回地址
         getImageUrl(url){

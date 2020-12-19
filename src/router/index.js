@@ -32,7 +32,18 @@ export default new Router({
                 {
                     path: '/singer',
                     component: () => import(/* webpackChunkName: "table" */ '../views/singer/Singer.vue'),
-                    meta: { title: '歌手管理' }
+                    meta: { title: '歌手管理', noCache: true  }
+                },
+                {
+                    path: '/songs/:id',
+                    component: () => import(/* webpackChunkName: "table" */ '../views/songs/Songs.vue'),
+                    meta: { title: '歌曲管理', noCache: true },
+                    hidden: true
+                },
+                {
+                    path: '/song-list',
+                    component: () => import(/* webpackChunkName: "table" */ '../views/songList/SongList.vue'),
+                    meta: { title: '歌单管理' }
                 },
                 {
                     path: '/tabs',

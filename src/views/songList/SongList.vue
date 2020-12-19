@@ -3,7 +3,7 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 歌手列表
+                    <i class="el-icon-lx-cascades"></i> 歌单管理
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
@@ -63,9 +63,10 @@
                 </el-table-column>
                 <el-table-column label="歌曲管理" align="center">
                     <template slot-scope="scope">
-                        <router-link :to="'/songs/'+scope.row.id">
-                            <el-button type="success" plain round icon="el-icon-position" size="mini">歌曲管理</el-button>
-                        </router-link>
+                        <el-button type="success" plain round
+                                icon="el-icon-position" size="mini"
+                                @click="handleEdit(scope.$index, scope.row)"
+                        >歌曲管理</el-button>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" width="180" align="center">
@@ -432,7 +433,4 @@ export default {
     opacity: 0;
     cursor: pointer;
 }
-
-
-
 </style>

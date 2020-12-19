@@ -72,6 +72,11 @@ export default {
                     title: '歌手管理'
                 },
                 {
+                    icon: 'el-icon-lx-cascades',
+                    index:'song-list',
+                    title: "歌单管理"
+                },
+                {
                     icon: 'el-icon-lx-copy',
                     index: 'tabs',
                     title: 'tab选项卡'

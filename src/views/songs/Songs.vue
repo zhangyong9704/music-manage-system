@@ -23,11 +23,23 @@
                     header-cell-class-name="table-header"
                     @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="170" align="center"></el-table-column>
-                <el-table-column prop="name" label="歌手-歌名" align="center"></el-table-column>
-                <el-table-column label="歌单图片" align="center">
+                <el-table-column label="播放" align="center" width="85">
                     <template slot-scope="scope">
-                        <el-image class="table-td-thumb" fit="contain"
+                        <div class="song-img">
+                            <img :src="getImageUrl(scope.row.pic)" style="width:100%" alt=""/>
+                        </div>
+                        <div class="play">
+                            <div>
+                                <svg class="icon">
+                                    <use xlink:href="#icon-bofanganniu"></use>
+                                </svg>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="歌单图片" align="center" width="90">
+                    <template slot-scope="scope">
+                        <el-image class="table-td-thumb" fit="contain" style="border-radius: 5px;"
                                   :src="HOST+scope.row.pic"
                                   :preview-src-list="[HOST+scope.row.pic]">
                             <div slot="error" class="image-slot">
@@ -36,6 +48,7 @@
                         </el-image>
                     </template>
                 </el-table-column>
+                <el-table-column prop="name" label="歌手-歌名" align="center"></el-table-column>
                 <el-table-column prop="introduction" label="专辑" align="center"></el-table-column>
                 <el-table-column  label="创建日期" align="center">
                     <template slot-scope="scope">
@@ -105,7 +118,7 @@
                 <el-form-item prop="lyric" label="歌词" size="mini">
                     <el-input v-model="songsForm.lyric" :rows="7"
                               placeholder="歌词" type="textarea"
-                              maxlength="500" show-word-limit>
+                              maxlength="1500" show-word-limit>
                     </el-input>
                 </el-form-item>
                 <el-divider></el-divider>
@@ -117,21 +130,14 @@
                     <!-- 头衔缩略图 -->
                     <pan-thumb :image="tempSrc"/>
                     <image-cropper v-show="imageCropperShow" :width="300" :height="300" :key="imageCropperKey"
-                                   :url="uploadURL" field="file" @close="close" @crop-upload-success="cropSuccess"/>
+                                   :url="uploadCover" field="file" @close="close"  @crop-upload-success="cropSuccess"/>
                 </el-form-item>
                 <el-divider></el-divider>
                 <el-form-item label="选择歌曲">
-                    <el-upload
-                            class="upload-demo"
-                            action="https://jsonplaceholder.typicode.com/posts/"
-                            :on-preview="handlePreview"
-                            :on-remove="handleRemove"
-                            :before-remove="beforeRemove"
-                            :limit="1"
-                            :on-exceed="handleExceed"
-                            :file-list="fileList">
+                    <el-upload :action="uploadFiles" :on-remove="handleRemove" ref="upload"
+                            :on-success="handleSuccess" :limit="1" :file-list="fileList" >
                         <el-button size="small" type="primary">点击上传</el-button>
-                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                        <div slot="tip" class="el-upload__tip">只能上传mp3文件，且不超过5M</div>
                     </el-upload>
                 </el-form-item>
             </el-form>
@@ -145,12 +151,11 @@
 </template>
 
 <script>
-    import Singer from '@/api/singer';
     import Songs from '@/api/songs';
     import ImageCropper from '@/components/ImageCropper'
     import PanThumb from '@/components/PanThumb'
     export default {
-        name: 'singer',
+        name: 'songs',
         components: {
             ImageCropper, PanThumb
         },
@@ -163,7 +168,6 @@
                 },
                 singerID: this.$route.params.id,
                 songQueryVo : {},//歌手查询条件
-                songsQueryVo :{},  //歌曲查询条件
                 tableData: [],  //表格数据
                 multipleSelection: [],  //多选
                 isVisible: false,
@@ -171,10 +175,12 @@
                 title :'',   //新增编辑标题
                 flags : '',  //区分新增和编辑
                 isEditCancel: false, //用于编辑时存储上文件路径
-                songsForm:{},   //歌手弹框对象
+                songsForm:{},   //歌手新增弹框对象
+                fileList: [],//上传问价列表
                 id: -1,
                 HOST:this.$store.state.HOST,
-                uploadURL:this.$store.state.UPLOADURL,  //歌手上传路径
+                uploadCover : this.$store.state.UPLOADSONGSCOVER,  //歌曲图片封面上传
+                uploadFiles : this.$store.state.UPLOADSONGSURL,   //歌曲文件上传路径
                 defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",  //默认背景
                 tempSrc:'',
                 imageCropperShow : false,  //上传时弹框组件是否显示
@@ -189,20 +195,19 @@
         watch : {
             //watch中监听路由的变化，当路由变化时，重新调用created中的内容
             $route(to, from) {  //监听路由是否有变化
-                console.log('watch $route')
-                this.songsQueryVo.singerId = this.$route.params.id;
+                this.songQueryVo.singerId = this.$route.params.id;  //获取歌手id
                 this.fetchData();
             }
         },
         created() {
-            this.songsQueryVo.singerId= this.$route.params.id;
+            this.songQueryVo.singerId= this.$route.params.id; //获取歌手id
             this.fetchData();
         },
         methods: {
             // 获取数据
             fetchData() {
                 this.Loading = true ;
-                Songs.getSongsPagesInfo(this.query,this.songsQueryVo).then(res => {
+                Songs.getSongsPagesInfo(this.query,this.songQueryVo).then(res => {
                     this.tableData = res.data.songs;
                     this.pageTotal = res.data.total || 20;
                 });
@@ -216,6 +221,7 @@
             //触发重置搜索按钮
             handleReset(){
                 this.songQueryVo = {};
+                this.songQueryVo.singerId= this.$route.params.id; //获取歌手id
                 this.fetchData();
             },
             // 删除操作
@@ -223,7 +229,7 @@
                 this.$confirm('确定要删除吗？', '提示', { // 二次确认删除
                     type: 'warning'
                 }).then(() => {
-                    Singer.deleteSingerByID(row.id).then(res=>{
+                    Songs.deleteSongsByID(row.id).then(res=>{
                         if (res && res.code===200){
                             this.$message.success(res.message);
                             this.fetchData();
@@ -244,7 +250,7 @@
                 for (let i = 0; i < this.multipleSelection.length; i++) {
                     str.push(this.multipleSelection[i].id);
                 }
-                Singer.deleteMultipleSelection(str).then(res=>{
+                Songs.deleteMultipleSelection(str).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);
                         this.multipleSelection = [];
@@ -258,65 +264,72 @@
             //新增和编辑统一公共统一调用入口
             addAndEditCommonEntrance(identification,index,row){
                 if ("add"===identification){ //调用添加方法
-                    this.title = '添加歌手信息'
+                    this.title = '新增歌曲'
                     this.flags = 'add'
-                    this.addSinger()
+                    this.handleAddSongs()
                 }
                 if ('edit'===identification){  //调用编辑的方法
-                    this.title = '编辑歌手信息'
+                    this.title = '编辑歌曲'
                     this.flags = 'edit'
-                    this.handleEdit(index, row)
+                    this.handleEditSongs(index, row)
                 }
             },
 
             //新增和保存的统一路径调用入口
             saveCommonEntrance(identification,index,row){
                 if ("add"===identification){ //调用添加方法
-                    debugger
-                    this.confirmAddSinger()
+                    this.saveAddSongs()
                 }
                 if ('edit'===identification){  //调用编辑的方法
-                    this.saveEdit();
+                    this.saveEditSongs();
                 }
             },
-            // 编辑操作
-            handleEdit(index, row) {
-                this.songsForm = {}
-                this.songsForm = row
-                this.tempSrc = this.getImageUrl(row.pic); //处理图像路径问题
-                this.isEditCancel = false
-                this.isVisible = true;
-            },
-            // 保存编辑
-            saveEdit() {
-                Singer.updateSinger(this.songsForm).then(res=>{
-                    if (res && res.code===200){
-                        this.$message.success(res.message);
-                        this.isVisible = false;
-                        this.songsForm={};
-                    }
-                }).catch(err=>{
-                    this.$message.error(err.message);
-                })
-            },
-            //新增歌手
-            addSinger(){
+
+            //新增歌曲
+            handleAddSongs(){
                 this.tempSrc='';
                 this.songsForm = {}
+                this.fileList = []   //清空文件列表
+                this.songsForm.singerId= this.singerID; //获取歌手id
                 this.tempSrc = this.defaultSrc;
                 this.isVisible = true;
+                //todo 二次添加时会出现上一次文件缓存名称
             },
-            //新增歌手确定保存
-            confirmAddSinger(){
-                Singer.saveAddSinger(this.songsForm).then(res=>{
+            //新增歌曲确定保存
+            saveAddSongs(){
+                Songs.saveAddSongs(this.songsForm).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);
                         this.isVisible = false;
-                        this.songsForm = {};
                         this.fetchData();
                     }
                 }).catch(err=>{
                     this.$message.success(err.message);
+                })
+            },
+
+            // 编辑操作
+            handleEditSongs(index, row) {
+                this.songsForm = {}   //清空，避免出现缓存
+                this.fileList = []   //清空文件列表
+                this.songsForm = row  //当前整行数据
+                this.fileList = [{ name : row.name + row.url.substring(row.url.lastIndexOf(".")), url : row.url }] //如果多个文件需要遍历(这里限制只能上传一个)
+                this.tempSrc = this.getImageUrl(row.pic); //处理图像路径问题
+                this.isEditCancel = false
+                this.isVisible = true;
+            },
+
+
+
+            // 保存编辑
+            saveEditSongs() {
+                Songs.updateSongs(this.songsForm).then(res=>{
+                    if (res && res.code===200){
+                        this.$message.success(res.message);
+                        this.isVisible = false;
+                    }
+                }).catch(err=>{
+                    this.$message.error(err.message);
                 })
             },
 
@@ -330,22 +343,23 @@
                 this.$set(this.query, 'pageIndex', val);
                 this.fetchData();
             },
+
             //图片上传成功
             cropSuccess(data){ //上传保存成功后调用  data 直接进行了封装，==》response.data
                 if (data.path){
                     if ('edit'===this.flags){   //编辑功能删除先前图片
                         //todo 删除对应图片,上次保存图片的位置
-                        Singer.deletePreviousCover(this.songsForm.pic).then((res)=>{
+                        Songs.deleteSongsCoverAndFiles(this.songsForm.pic).then((res)=>{
                             if (res && res.code ===200){
                                 this.$message.success(res.message);
                             }
                         }).catch(err=>{
-                            this.$message.success(err.message);
+                            this.$message.error(err.message);
                         })
                     }
                     this.imageCropperShow = false; //先关闭弹窗
-                    this.songsForm.pic = data.path;
-                    this.tempSrc = this.getImageUrl(data.path);
+                    this.songsForm.pic = data.path;  //提交上传图片地址
+                    this.tempSrc = this.getImageUrl(data.path);  //图片回显
                     // 上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
                     this.imageCropperKey = this.imageCropperKey + 1 ;
                     this.isEditCancel = true
@@ -371,37 +385,28 @@
                 }
                 return result;
             },
-
-
-            submitUpload() {
-                this.fileUploadBtnText = '正在上传',
-                    this.importBtnDisabled = true,
-                    this.loading = true,
-                    this.$refs.upload.submit();
-            },
-
-            //上传成功
-            fileUploadSuccess(response) {
-                if (response.success === true) {
-                    this.fileUploadBtnText = '上传成功'
-                    this.loading = false
-                    this.$message({
-                        type: 'success',
-                        message: '上传成功',
-                    })
+            //===================歌曲上传===============================
+            handleSuccess(response, file, fileList){
+                if (response && response.code===200){
+                    this.songsForm.url = response.data.path  //获取上传后的文件保存地址
+                }else{
+                    this.$message.error(response.message);
+                    this.songsForm.url = ''
                 }
             },
 
-            //上传失败
-            fileUploadError(response) {
-                this.fileUploadBtnText = '导入失败'
-                this.loading = false
-                this.$message({
-                    type: 'error',
-                    message: '导入失败'
+            handleRemove(file, fileList){
+                Songs.deleteSongsCoverAndFiles(this.songsForm.url).then(res =>{
+                    if (res && res.code ===200){
+                        this.$message.success(res.message);
+                        this.songsForm.url = ''
+                    }
+                }).catch(err=>{
+                    this.$message.error(err.message);
+                    this.songsForm.url = ''
                 })
+            },
 
-            }
         }
     };
 </script>
@@ -447,5 +452,32 @@
     }
     /deep/ .el-upload--text{
         border:none !important;
+    }
+/*    播放样式*/
+    .play {
+        position: absolute;
+        z-index: 100;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        top: 3px;
+        left: 18px;
+    }
+    .icon {
+        width: 2em;
+        height: 2em;
+        color: red;
+        fill: currentColor;
+        overflow: hidden;
+    }
+    .song-img{
+        width: 65%;
+        height: 35px;
+        border-radius: 5px;
+        margin-left: 12px;
+        overflow: hidden;
     }
 </style>

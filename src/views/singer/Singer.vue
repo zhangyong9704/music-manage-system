@@ -183,7 +183,7 @@ export default {
             singerForm:{},   //歌手弹框对象
             id: -1,
             HOST:this.$store.state.HOST,
-            uploadURL:this.$store.state.UPLOADURL,  //歌手上传路径
+            uploadURL:this.$store.state.UPLOADSINGERCOVER,  //歌手上传路径
             defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",  //默认背景
             tempSrc:'',
             imageCropperShow : false,  //上传时弹框组件是否显示
@@ -271,7 +271,6 @@ export default {
         //新增和保存的统一路径调用入口
         saveCommonEntrance(identification,index,row){
             if ("add"===identification){ //调用添加方法
-                debugger
                 this.confirmAddSinger()
             }
             if ('edit'===identification){  //调用编辑的方法

@@ -1,15 +1,15 @@
 import request from '@/utils/request';
 /*
-* 歌手管理
+* 歌曲管理
 * */
 export default {
 
     /*
-    获取歌手所有信息(不带筛选条件)
+    获取歌曲所有信息(不带筛选条件)
      */
     getSingerAllInfo(){
         return request({
-            url: `singer/querySingers`,
+            url: `song/querySongs`,
             method: 'get',
         })
     },
@@ -25,19 +25,19 @@ export default {
         })
     },
 
-    //确定保存新增歌手信息
-    saveAddSinger(singer) {
+    //确定保存新增歌曲信息
+    saveAddSongs(song) {
         return request({
-            url:`/singer/add`,
+            url:`/song/add`,
             method:'post',
-            data:singer
+            data:song
         })
     },
 
-    //根据ID删除歌手信息
-    deleteSingerByID(id){
+    //根据ID删除歌曲信息
+    deleteSongsByID(id){
         return request({
-            url:`/singer/deleteSinger/${id}`,
+            url:`/song/deleteSong/${id}`,
             method:'delete',
         })
     },
@@ -45,30 +45,29 @@ export default {
     //批量删除操作
     deleteMultipleSelection(params=[]){
         return request({
-            url:`/singer/deleteBatch/${params}`,
+            url:`/song/deleteBatch/${params}`,
             method:'delete',
         })
     },
 
     //修改歌手信息
-    updateSinger(singer){
+    updateSongs(songs){
         return request({
-            url:`/singer/update`,
+            url:`/song/update`,
             method:'put',
-            data:singer
+            data:songs
         })
     },
 
-    //删除上次图片
-    deletePreviousCover(filePath){
+    //删除歌曲封面和音乐文件统一删除删除方法
+    deleteSongsCoverAndFiles(filePath){
         return request({
-            url:`/singer/delete-upload`,
+            url:`/song/delete-upload`,
             method:'post',
             params: {
                 filePath
             }
         })
     }
-
 
 }

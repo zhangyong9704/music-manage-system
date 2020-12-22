@@ -49,7 +49,7 @@
     </div>
 </template>
 <script>
-import bus from '../common/bus';
+import bus from './js/bus';
 export default {
     data() {
         return {
@@ -130,7 +130,7 @@ export default {
 }
 .header .logo {
     float: left;
-    width: 250px;
+    width: 200px;
     line-height: 70px;
 }
 .header-right {

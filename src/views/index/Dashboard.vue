@@ -111,7 +111,7 @@
 
 <script>
 import Schart from 'vue-schart';
-import bus from '@/components/common/bus';
+import bus from '@/components/common/js/bus';
 export default {
     name: 'dashboard',
     data() {

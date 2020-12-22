@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import bus from '../common/bus';
+import bus from './js/bus';
 export default {
     data() {
         return {
@@ -191,7 +191,7 @@ export default {
     width: 0;
 }
 .sidebar-el-menu:not(.el-menu--collapse) {
-    width: 250px;
+    width: 200px;
 }
 .sidebar > ul {
     height: 100%;

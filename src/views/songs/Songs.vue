@@ -28,8 +28,13 @@
                         <div class="song-img">
                             <img :src="getImageUrl(scope.row.pic)" style="width:100%" alt=""/>
                         </div>
-                        <div class="play">
-                            <div>
+                        <div class="play" @click="setSongUrl(scope.row.url,scope.row.name)">
+                            <div v-if="toggle === scope.row.name">
+                                <svg class="icon">
+                                    <use xlink:href="#icon-zanting"></use>
+                                </svg>
+                            </div>
+                            <div v-if="toggle !== scope.row.name">
                                 <svg class="icon">
                                     <use xlink:href="#icon-bofanganniu"></use>
                                 </svg>
@@ -101,6 +106,7 @@
                         @current-change="handlePageChange"
                 ></el-pagination>
             </div>
+            <SongsAudio />
         </div>
 
         <!--添加编辑歌手-->
@@ -152,43 +158,43 @@
 
 <script>
     import Songs from '@/api/songs';
-    import ImageCropper from '@/components/ImageCropper'
-    import PanThumb from '@/components/PanThumb'
+    import SongsAudio from '@/components/common/SongsAudio';   //引入音乐播放组件
+    import { mapGetters } from 'vuex'
+    import ImageCropper from '@/components/ImageCropper'  //图像上传组件
+    import PanThumb from '@/components/PanThumb'  //
+
     export default {
         name: 'songs',
         components: {
-            ImageCropper, PanThumb
+            ImageCropper,PanThumb,SongsAudio
         },
         data() {
             return {
                 Loading: true, // 是否显示loading信息
                 query: {   //分页信息
-                    pageIndex: 1,
-                    pageSize: 8,
+                    pageIndex: 1,  //当前页
+                    pageSize: 8,  //页面数量
                 },
-                singerID: this.$route.params.id,
+                pageTotal: 0,   //总页数
+                singerID: this.$route.params.id, //歌手id
                 songQueryVo : {},//歌手查询条件
                 tableData: [],  //表格数据
                 multipleSelection: [],  //多选
-                isVisible: false,
-                pageTotal: 0,
+                isVisible: false,   //新增、编辑弹框是否显示
                 title :'',   //新增编辑标题
                 flags : '',  //区分新增和编辑
                 isEditCancel: false, //用于编辑时存储上文件路径
                 songsForm:{},   //歌手新增弹框对象
-                fileList: [],//上传问价列表
+                fileList: [],//上传文件列表
                 id: -1,
-                HOST:this.$store.state.HOST,
-                uploadCover : this.$store.state.UPLOADSONGSCOVER,  //歌曲图片封面上传
-                uploadFiles : this.$store.state.UPLOADSONGSURL,   //歌曲文件上传路径
+                HOST:this.$store.state.HOST,  //默认地址
+                uploadCover : this.$store.state.UPLOAD_SONGS_COVER,  //歌曲图片封面上传
+                uploadFiles : this.$store.state.UPLOAD_SONGS_URL,   //歌曲文件上传路径
                 defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",  //默认背景
-                tempSrc:'',
+                tempSrc:'',                 //临时图像地址
                 imageCropperShow : false,  //上传时弹框组件是否显示
-                imageCropperKey : 0 ,  //
-                srcList: [
-                    'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg',
-                    'https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg'
-                ]
+                imageCropperKey : 0 ,     //图像上传标识key
+                toggle: false,           //播放器的图标状态
             };
         },
         //监听器
@@ -198,6 +204,11 @@
                 this.songQueryVo.singerId = this.$route.params.id;  //获取歌手id
                 this.fetchData();
             }
+        },
+        computed :{
+            ...mapGetters({
+                isPlay:'isPlay',
+            }),
         },
         created() {
             this.songQueryVo.singerId= this.$route.params.id; //获取歌手id
@@ -319,8 +330,6 @@
                 this.isVisible = true;
             },
 
-
-
             // 保存编辑
             saveEditSongs() {
                 Songs.updateSongs(this.songsForm).then(res=>{
@@ -407,7 +416,23 @@
                 })
             },
 
-        }
+        //    ==================歌曲播放部分===============================
+            //切换播放歌曲
+            setSongUrl(url,name) {
+                this.toggle = name;  //设置当前值为歌名
+                this.$store.commit('setUrl',this.HOST + url);  //拼接歌曲访问地址
+                if(this.isPlay){
+                    this.$store.commit('setIsPlay',false);
+                    this.toggle = false
+                }else{
+                    this.$store.commit('setIsPlay',true);
+                }
+            }
+        },
+        //切换页面停止播放
+        destroyed() {
+            this.$store.commit('setIsPlay',false);
+        },
     };
 </script>
 
@@ -416,7 +441,7 @@
         margin-bottom: 20px;
     }
     .handle-input {
-        width: 250px;
+        width: 210px;
         display: inline-block;
     }
     .handle-add {
@@ -432,7 +457,6 @@
     .blue {
         color: #409EFF;
     }
-
     .mr10 {
         margin-right: 12px;
     }
@@ -442,6 +466,7 @@
         width: 40px;
         height: 40px;
     }
+    /*上传组件的样式*/
     /deep/ .el-upload{
         width: 80px;
         height: 35px;
@@ -463,21 +488,21 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        top: 3px;
-        left: 18px;
+        top: 6px;
+        left: 17px;
     }
     .icon {
         width: 2em;
         height: 2em;
-        color: red;
+        color: #00d1b2a8;
         fill: currentColor;
         overflow: hidden;
     }
     .song-img{
         width: 65%;
-        height: 35px;
-        border-radius: 5px;
-        margin-left: 12px;
+        height: 40px;
+        border-radius: 20px;
+        margin-left: 10px;
         overflow: hidden;
     }
 </style>

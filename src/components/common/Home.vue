@@ -20,7 +20,7 @@
 import vHead from './Header.vue';
 import vSidebar from './Sidebar.vue';
 import vTags from './Tags.vue';
-import bus from './bus';
+import bus from './js/bus';
 export default {
     data() {
         return {

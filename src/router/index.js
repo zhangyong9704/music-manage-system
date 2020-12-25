@@ -37,13 +37,17 @@ export default new Router({
                 {
                     path: '/songs/:id',
                     component: () => import(/* webpackChunkName: "table" */ '../views/songs/Songs.vue'),
-                    meta: { title: '歌曲管理', noCache: true },
-                    hidden: true
+                    meta: { title: '歌手-歌曲管理', noCache: true },
                 },
                 {
                     path: '/song-list',
                     component: () => import(/* webpackChunkName: "table" */ '../views/songList/SongList.vue'),
                     meta: { title: '歌单管理' }
+                },
+                {
+                    path: '/sheet-songs/:id',
+                    component: () => import(/* webpackChunkName: "table" */ '../views/songList/SheetSongs.vue'),
+                    meta: { title: '歌单-歌曲管理', noCache: true },
                 },
                 {
                     path: '/tabs',

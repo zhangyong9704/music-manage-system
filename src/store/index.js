@@ -9,6 +9,7 @@ const store = new Vuex.Store({
         UPLOAD_SINGER_COVER: 'http://localhost:8088/singer/upload',  //歌手封面上传路径
         UPLOAD_SONGS_URL: 'http://localhost:8088/song/upload-file',  //歌曲文件上传路径
         UPLOAD_SONGS_COVER: 'http://localhost:8088/song/upload-cover',  //歌曲文件封面路径
+        UPLOAD_SONG_LIST_COVER: 'http://localhost:8088/song-list/upload-cover',  //歌单文件封面路径
 
         url:'',  //歌曲播放地址
         id:'',  //歌曲id

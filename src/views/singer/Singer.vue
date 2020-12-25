@@ -30,7 +30,7 @@
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column prop="id" label="ID" width="170" align="center"></el-table-column>
                 <el-table-column prop="name" label="歌手" align="center"></el-table-column>
-                <el-table-column label="类别" width="60" align="center">
+                <el-table-column label="类别" width="65" align="center">
                     <template slot-scope="scope">
                         <el-tag type='primary'>{{getSexType(scope.row.sex)}}</el-tag>
                     </template>

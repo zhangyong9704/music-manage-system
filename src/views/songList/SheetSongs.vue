@@ -3,7 +3,7 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 歌手-歌曲列表
+                    <i class="el-icon-lx-cascades"></i> 歌单-歌曲列表
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
@@ -11,9 +11,9 @@
             <div class="handle-box">
                 <el-button type="danger" icon="el-icon-delete" class="handle-del mr10" @click="delAllSelection">批量删除</el-button>
                 <el-button type="warning" icon="el-icon-user-solid" class="handle-add mr10" @click="addAndEditCommonEntrance('add')">新增歌曲</el-button>
-                <el-input v-model="songQueryVo.name" placeholder="歌名" class="handle-input mr10"></el-input>
-                <el-input v-model="songQueryVo.introduction" placeholder="专辑" clearable class="handle-input mr10"></el-input>
-                <el-input v-model="songQueryVo.lyric" placeholder="歌词" class="handle-input mr10"></el-input>
+                <el-input v-model="listSongsQueryVo.name" placeholder="歌名" class="handle-input mr10"></el-input>
+                <el-input v-model="listSongsQueryVo.introduction" placeholder="专辑" clearable class="handle-input mr10"></el-input>
+                <el-input v-model="listSongsQueryVo.lyric" placeholder="歌词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" class="mr10" @click="handleSearch">搜索</el-button>
                 <el-button type="success" icon="el-icon-magic-stick" @click="handleReset">重置</el-button>
             </div>
@@ -128,7 +128,7 @@
                     </el-input>
                 </el-form-item>
                 <el-divider></el-divider>
-                <!-- 讲师头像 -->
+                <!-- 歌曲头像 -->
                 <el-form-item label="歌曲头像">
                     <!-- 文件上传按钮 -->
                     <el-button type="primary" plain icon="el-icon-upload" style="margin-right:20%"
@@ -158,15 +158,20 @@
 
 <script>
     import Songs from '@/api/songs';
+    import ListSongs from '@/api/listSongs';   //引入歌单-歌曲列表
     import SongsAudio from '@/components/common/SongsAudio';   //引入音乐播放组件
     import { mapGetters } from 'vuex'
     import ImageCropper from '@/components/ImageCropper'  //图像上传组件
     import PanThumb from '@/components/PanThumb'  //
 
     export default {
-        name: 'songs',
+        name: 'sheet-songs',
         components: {
             ImageCropper,PanThumb,SongsAudio
+        },
+        created() {
+            this.listSongsQueryVo.id= this.$route.params.id; //获取歌单id
+            this.fetchData();
         },
         data() {
             return {
@@ -176,8 +181,8 @@
                     pageSize: 8,  //页面数量
                 },
                 pageTotal: 0,   //总页数
-                singerID: this.$route.params.id, //歌手id
-                songQueryVo : {},//歌手查询条件
+                songListId: this.$route.params.id, //歌单id
+                listSongsQueryVo : {},//歌单-歌手查询条件
                 tableData: [],  //表格数据
                 multipleSelection: [],  //多选
                 isVisible: false,   //新增、编辑弹框是否显示
@@ -201,7 +206,7 @@
         watch : {
             //watch中监听路由的变化，当路由变化时，重新调用created中的内容
             $route(to, from) {  //监听路由是否有变化
-                this.songQueryVo.singerId = this.$route.params.id;  //获取歌手id
+                this.listSongsQueryVo.id= this.$route.params.id; //获取歌单id
                 this.fetchData();
             }
         },
@@ -210,17 +215,13 @@
                 isPlay:'isPlay',
             }),
         },
-        created() {
-            this.songQueryVo.singerId= this.$route.params.id; //获取歌手id
-            this.fetchData();
-        },
         methods: {
             // 获取数据
             fetchData() {
                 this.Loading = true ;
-                Songs.getSongsPagesInfo(this.query,this.songQueryVo).then(res => {
-                    this.tableData = res.data.songs;
-                    this.pageTotal = res.data.total || 20;
+                ListSongs.getListSongListPagesInfo(this.query,this.listSongsQueryVo).then(res => {
+                    this.tableData = res.data.listSongs;
+                    this.pageTotal = res.data.total || 10;
                 });
                 this.Loading = false ;
             },
@@ -231,23 +232,22 @@
             },
             //触发重置搜索按钮
             handleReset(){
-                this.songQueryVo = {};
-                this.songQueryVo.singerId= this.$route.params.id; //获取歌手id
+                this.listSongsQueryVo = {};
+                this.listSongsQueryVo.id= this.$route.params.id; //获取歌单id
                 this.fetchData();
             },
-            // 删除操作
+            // 删除操作 todo
             handleDelete(index, row) {
                 this.$confirm('确定要删除吗？', '提示', { // 二次确认删除
                     type: 'warning'
-                }).then(() => {
-                    Songs.deleteSongsByID(row.id).then(res=>{
+                }).then(() => {  //该删除只删除关联表中的数据，并不删除歌曲
+                    ListSongs.deleteSongListsByID(this.songListId,row.id).then(res=>{
                         if (res && res.code===200){
                             this.$message.success(res.message);
                             this.fetchData();
                         }
                     }).catch(()=>{})
-                })
-                    .catch(() => {
+                }).catch(() => {
                         this.$message.info("已取消删除操作");
                     });
             },
@@ -255,13 +255,13 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
-            //批量删除
+            //批量删除 todo
             delAllSelection() {
                 let str = [];
                 for (let i = 0; i < this.multipleSelection.length; i++) {
                     str.push(this.multipleSelection[i].id);
                 }
-                Songs.deleteMultipleSelection(str).then(res=>{
+                ListSongs.deleteMultipleSelection(str,this.songListId).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);
                         this.multipleSelection = [];
@@ -277,38 +277,35 @@
                 if ("add"===identification){ //调用添加方法
                     this.title = '新增歌曲'
                     this.flags = 'add'
-                    this.handleAddSongs()
+                    this.handleAddSongLists()
                 }
                 if ('edit'===identification){  //调用编辑的方法
                     this.title = '编辑歌曲'
                     this.flags = 'edit'
-                    this.handleEditSongs(index, row)
+                    this.handleEditSongLists(index, row)
                 }
             },
-
             //新增和保存的统一路径调用入口
             saveCommonEntrance(identification,index,row){
                 if ("add"===identification){ //调用添加方法
-                    this.saveAddSongs()
+                    this.saveAddSongLists()
                 }
                 if ('edit'===identification){  //调用编辑的方法
-                    this.saveEditSongs();
+                    this.saveEditSongLists();
                 }
             },
-
             //新增歌曲
-            handleAddSongs(){
+            handleAddSongLists(){
                 this.tempSrc='';
                 this.songsForm = {}
                 this.fileList = []   //清空文件列表
-                this.songsForm.singerId= this.singerID; //获取歌手id
                 this.tempSrc = this.defaultSrc;
                 this.isVisible = true;
                 //todo 二次添加时会出现上一次文件缓存名称
             },
             //新增歌曲确定保存
-            saveAddSongs(){
-                Songs.saveAddSongs(this.songsForm).then(res=>{
+            saveAddSongLists(){
+                ListSongs.saveAddSongLists(this.songsForm,this.songListId).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);
                         this.isVisible = false;
@@ -318,9 +315,8 @@
                     this.$message.success(err.message);
                 })
             },
-
             // 编辑操作
-            handleEditSongs(index, row) {
+            handleEditSongLists(index, row) {
                 this.songsForm = {}   //清空，避免出现缓存
                 this.fileList = []   //清空文件列表
                 this.songsForm = row  //当前整行数据
@@ -331,7 +327,7 @@
             },
 
             // 保存编辑
-            saveEditSongs() {
+            saveEditSongLists() {
                 Songs.updateSongs(this.songsForm).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);

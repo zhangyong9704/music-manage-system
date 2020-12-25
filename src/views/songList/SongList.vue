@@ -10,15 +10,10 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="danger" icon="el-icon-delete" class="handle-del mr10" @click="delAllSelection">批量删除</el-button>
-                <el-button type="warning" icon="el-icon-user-solid" class="handle-add mr10" @click="addAndEditCommonEntrance('add')">新增歌手</el-button>
-                <el-input v-model="singerQueryVo.name" placeholder="用户名" class="handle-input mr10"></el-input>
-                <el-select v-model="singerQueryVo.sex" placeholder="类别" clearable  class="handle-select mr10">
-                    <el-option key="0" label="女" value="0"></el-option>
-                    <el-option key="1" label="男" value="1"></el-option>
-                    <el-option key="2" label="组合" value="2"></el-option>
-                    <el-option key="3" label="未知" value="3"></el-option>
-                </el-select>
-                <el-input v-model="singerQueryVo.location" placeholder="地区" class="handle-input mr10"></el-input>
+                <el-button type="warning" icon="el-icon-user-solid" class="handle-add mr10" @click="addAndEditCommonEntrance('add')">新增歌单</el-button>
+                <el-input v-model="songListQueryVo.title" placeholder="歌单名称" class="handle-input mr10"></el-input>
+                <el-input v-model="songListQueryVo.style" placeholder="风格/类型" class="handle-input mr10"></el-input>
+                <el-input v-model="songListQueryVo.introduction" placeholder="歌单介绍" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" class="mr10" @click="handleSearch">搜索</el-button>
                 <el-button type="success" icon="el-icon-magic-stick" @click="handleReset">重置</el-button>
             </div>
@@ -29,12 +24,7 @@
                 @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column prop="id" label="ID" width="170" align="center"></el-table-column>
-                <el-table-column prop="name" label="歌手" align="center"></el-table-column>
-                <el-table-column label="类别" width="60" align="center">
-                    <template slot-scope="scope">
-                        <el-tag type='primary'>{{getSexType(scope.row.sex)}}</el-tag>
-                    </template>
-                </el-table-column>
+                <el-table-column prop="title" label="歌单" align="center" width="300"></el-table-column>
                 <el-table-column label="头像" align="center">
                     <template slot-scope="scope">
                        <el-image class="table-td-thumb" fit="contain"
@@ -46,16 +36,20 @@
                        </el-image>
                     </template>
                 </el-table-column>
-                <el-table-column  label="出生日期" align="center">
+                <el-table-column  label="歌单日期" align="center">
                     <template slot-scope="scope">
                         <i class="el-icon-time"></i>
-                        <span style="margin-left: 10px">{{(scope.row.birth).substring(0,10)}}</span>
+                        <span style="margin-left: 10px">{{scope.row.createTime==null?"":(scope.row.createTime).substring(0,10)}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="location" label="地区" align="center"></el-table-column>
-                <el-table-column prop="" label="歌手简介" align="center">
+                <el-table-column label="类型" align="center">
                     <template slot-scope="scope">
-                        <el-popover placement="top-start" title="歌手简介"
+                        <el-tag type='primary'>{{scope.row.style}}</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="" label="歌单简介" align="center">
+                    <template slot-scope="scope">
+                        <el-popover placement="top-start" title="歌单简介"
                                 width="400" trigger="click" :content="''===scope.row.introduction?'暂无介绍':scope.row.introduction">
                             <el-button class="blue" type="text" slot="reference">简介详情</el-button>
                         </el-popover>
@@ -63,10 +57,9 @@
                 </el-table-column>
                 <el-table-column label="歌曲管理" align="center">
                     <template slot-scope="scope">
-                        <el-button type="success" plain round
-                                icon="el-icon-position" size="mini"
-                                @click="handleEdit(scope.$index, scope.row)"
-                        >歌曲管理</el-button>
+                        <router-link :to="'/sheet-songs/'+scope.row.id">
+                            <el-button type="success" plain round icon="el-icon-position" size="mini">歌曲管理</el-button>
+                        </router-link>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" width="180" align="center">
@@ -101,41 +94,25 @@
 
         <!--添加编辑歌手-->
         <el-dialog :title="title" :visible.sync="isVisible" width="40%" center :show-close="!isEditCancel">
-            <el-form :model="singerForm" ref="singerForm" label-width="80px">
-                <el-form-item prop="name" label="歌手名称" size="mini">
-                    <el-input v-model="singerForm.name" placeholder="歌手名"
-                    ></el-input>
+            <el-form :model="songListForm" ref="songListForm" label-width="80px">
+                <el-form-item prop="title" label="歌单名称" size="mini">
+                    <el-input v-model="songListForm.title" placeholder="歌单名称" maxlength="50" ></el-input>
                 </el-form-item>
-                <el-form-item label="性别" size="mini">
-                    <el-radio-group v-model="singerForm.sex">
-                        <el-radio  :label="0" >女</el-radio>
-                        <el-radio  :label="1" >男</el-radio>
-                        <el-radio  :label="2" >组合</el-radio>
-                        <el-radio  :label="3" >不明</el-radio>
-                    </el-radio-group>
+                <el-form-item prop="style" label="风格" size="mini">
+                    <el-input v-model="songListForm.style" placeholder="风格/类型"></el-input>
                 </el-form-item>
-                <el-form-item prop="birth" label="生日" size="mini">
-                    <el-date-picker type="date" placeholder="出生日期"
-                                    v-model="singerForm.birth"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    style="width:100%"
-                    ></el-date-picker>
-                </el-form-item>
-                <el-form-item prop="location" label="地区" size="mini">
-                    <el-input v-model="singerForm.location" placeholder="地区"></el-input>
-                </el-form-item>
-                <el-form-item prop="introduction" label="简介" size="mini">
-                    <el-input v-model="singerForm.introduction"
+                <el-form-item prop="introduction" label="歌单简介" size="mini">
+                    <el-input v-model="songListForm.introduction"
                               placeholder="简介" type="textarea"
-                              maxlength="240" show-word-limit>
+                              maxlength="255" show-word-limit>
                     </el-input>
                 </el-form-item>
-                <!-- 讲师头像 -->
-                <el-form-item label="歌手头像">
+                <!-- 歌单头像 -->
+                <el-form-item label="歌单封面">
                     <!-- 头衔缩略图 -->
                     <pan-thumb :image="tempSrc"/>
                     <!-- 文件上传按钮 -->
-                    <el-button type="primary" icon="el-icon-upload" @click="imageCropperShow=true">更换头像
+                    <el-button type="primary" icon="el-icon-upload" @click="imageCropperShow=true">更换封面
                     </el-button>
                     <!--
                     v-show：是否显示上传组件
@@ -156,7 +133,7 @@
 </template>
 
 <script>
-import Singer from '@/api/singer';
+import songLists from '@/api/songLists';
 import { getSexType } from '@/api/common/commonUtils';
 import ImageCropper from '@/components/ImageCropper'
 import PanThumb from '@/components/PanThumb'
@@ -173,7 +150,7 @@ export default {
                 pageIndex: 1,
                 pageSize: 8,
             },
-            singerQueryVo : {},//歌手查询条件
+            songListQueryVo : {},//歌单查询条件
             tableData: [],  //表格数据
             multipleSelection: [],  //多选
             isVisible: false,
@@ -181,29 +158,26 @@ export default {
             title :'',   //新增编辑标题
             flags : '',  //区分新增和编辑
             isEditCancel: false, //用于编辑时存储上文件路径
-            singerForm:{},   //歌手弹框对象
+            songListForm:{},   //歌单弹框对象
             id: -1,
             HOST:this.$store.state.HOST,
-            uploadURL:this.$store.state.UPLOAD_SINGER_COVER,  //歌手上传路径
+            uploadURL:this.$store.state.UPLOAD_SONG_LIST_COVER,  //歌单上传路径
             defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",  //默认背景
             tempSrc:'',
             imageCropperShow : false,  //上传时弹框组件是否显示
             imageCropperKey : 0 ,  //
-            srcList: [
-                'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg',
-                'https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg'
-            ]
+
         };
     },
     created() {
-        this.fetchData();
+        this.fetchData();  //拉取数据
     },
     methods: {
         // 获取数据
         fetchData() {
             this.Loading = true ;
-            Singer.getSingerPagesInfo(this.query,this.singerQueryVo).then(res => {
-                this.tableData = res.data.singer;
+            songLists.getSongListsPagesInfo(this.query,this.songListQueryVo).then(res => {
+                this.tableData = res.data.songList;
                 this.pageTotal = res.data.total || 20;
             });
             this.Loading = false ;
@@ -215,7 +189,7 @@ export default {
         },
         //触发重置搜索按钮
         handleReset(){
-            this.singerQueryVo = {};
+            this.songListQueryVo = {};
             this.fetchData();
         },
         // 删除操作
@@ -223,7 +197,7 @@ export default {
             this.$confirm('确定要删除吗？', '提示', { // 二次确认删除
                 type: 'warning'
             }).then(() => {
-                 Singer.deleteSingerByID(row.id).then(res=>{
+                 songLists.deleteSongListsByID(row.id).then(res=>{
                      if (res && res.code===200){
                          this.$message.success(res.message);
                          this.fetchData();
@@ -244,7 +218,7 @@ export default {
             for (let i = 0; i < this.multipleSelection.length; i++) {
                 str.push(this.multipleSelection[i].id);
             }
-            Singer.deleteMultipleSelection(str).then(res=>{
+            songLists.deleteMultipleSelection(str).then(res=>{
                 if (res && res.code===200){
                     this.$message.success(res.message);
                     this.multipleSelection = [];
@@ -254,42 +228,39 @@ export default {
                 this.$message.error(err.message);
             })
         },
-
         //新增和编辑统一公共统一调用入口
         addAndEditCommonEntrance(identification,index,row){
             if ("add"===identification){ //调用添加方法
-                this.title = '添加歌手信息'
+                this.title = '添加歌单信息'
                 this.flags = 'add'
-                this.addSinger()
+                this.addSongLists()
             }
             if ('edit'===identification){  //调用编辑的方法
-                this.title = '编辑歌手信息'
+                this.title = '编辑歌单信息'
                 this.flags = 'edit'
                 this.handleEdit(index, row)
             }
         },
-
         //新增和保存的统一路径调用入口
         saveCommonEntrance(identification,index,row){
             if ("add"===identification){ //调用添加方法
-                debugger
-                this.confirmAddSinger()
+                this.saveAddSongLists()
             }
             if ('edit'===identification){  //调用编辑的方法
-                this.saveEdit();
+                this.saveEditSongLists();
             }
         },
         // 编辑操作
         handleEdit(index, row) {
-            this.singerForm = {}
-            this.singerForm = row
+            this.songListForm = {}
+            this.songListForm = row
             this.tempSrc = this.getImageUrl(row.pic); //处理图像路径问题
             this.isEditCancel = false
             this.isVisible = true;
         },
         // 保存编辑
-        saveEdit() {
-            Singer.updateSinger(this.singerForm).then(res=>{
+        saveEditSongLists() {
+            songLists.updateSongLists(this.songListForm).then(res=>{
                 if (res && res.code===200){
                     this.$message.success(res.message);
                     this.isVisible = false;
@@ -299,27 +270,26 @@ export default {
                 this.$message.error(err.message);
             })
         },
-        //新增歌手
-        addSinger(){
+        //新增歌单
+        addSongLists(){
             this.tempSrc='';
-            this.singerForm = {}
+            this.songListForm = {}
             this.tempSrc = this.defaultSrc;
             this.isVisible = true;
         },
-        //新增歌手确定保存
-        confirmAddSinger(){
-            Singer.saveAddSinger(this.singerForm).then(res=>{
+        //新增歌单确定保存
+        saveAddSongLists(){
+            songLists.saveAddSongLists(this.songListForm).then(res=>{
                 if (res && res.code===200){
                     this.$message.success(res.message);
                     this.isVisible = false;
-                    this.singerForm = {};
+                    this.songListForm = {};
                     this.fetchData();
                 }
             }).catch(err=>{
                 this.$message.success(err.message);
             })
         },
-
         //取消按钮
         cancel(){
             this.isVisible = false
@@ -335,7 +305,7 @@ export default {
             if (data.path){
                 if ('edit'===this.flags){   //编辑功能删除先前图片
                     //todo 删除对应图片,上次保存图片的位置
-                    Singer.deletePreviousCover(this.singerForm.pic).then((res)=>{
+                    songLists.deletePreviousCover(this.songListForm.pic).then((res)=>{
                         if (res && res.code ===200){
                             this.$message.success(res.message);
                         }
@@ -344,7 +314,7 @@ export default {
                     })
                 }
                 this.imageCropperShow = false; //先关闭弹窗
-                this.singerForm.pic = data.path;
+                this.songListForm.pic = data.path;
                 this.tempSrc = this.getImageUrl(data.path);
                 // 上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
                 this.imageCropperKey = this.imageCropperKey + 1 ;
@@ -361,7 +331,7 @@ export default {
             return this.$store.state.HOST+url;
         },
     }
-};
+}
 </script>
 
 <style scoped>

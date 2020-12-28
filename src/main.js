@@ -2,6 +2,7 @@ import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
 import ElementUI from 'element-ui';
+import VCharts from 'v-charts' // 在main中引入 v - charts
 import VueI18n from 'vue-i18n';
 import { messages } from './components/common/js/i18n';
 //import 'element-ui/lib/theme-chalk/index.css'; // 默认主题
@@ -10,13 +11,13 @@ import './assets/css/icon.css';
 import './assets/js/iconfont.js'; // 引入svg图标
 import './components/common/js/directives';
 import 'babel-polyfill';
-import store from '@/store';
+import store from '@/store';   //状态管理
+
 
 Vue.config.productionTip = false;
 Vue.use(VueI18n);
-Vue.use(ElementUI, {
-     size: 'small'
-});
+Vue.use(VCharts);
+Vue.use(ElementUI, { size: 'small' });
 const i18n = new VueI18n({
     locale: 'zh',
     messages

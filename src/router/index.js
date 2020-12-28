@@ -35,7 +35,8 @@ export default new Router({
                     meta: { title: '歌手管理', noCache: true  }
                 },
                 {
-                    path: '/songs/:id',
+                    name: 'songs',
+                    path: '/songs',
                     component: () => import(/* webpackChunkName: "table" */ '../views/songs/Songs.vue'),
                     meta: { title: '歌手-歌曲管理', noCache: true },
                 },
@@ -45,7 +46,8 @@ export default new Router({
                     meta: { title: '歌单管理' }
                 },
                 {
-                    path: '/sheet-songs/:id',
+                    name: 'sheet-songs',
+                    path: '/sheet-songs',
                     component: () => import(/* webpackChunkName: "table" */ '../views/songList/SheetSongs.vue'),
                     meta: { title: '歌单-歌曲管理', noCache: true },
                 },
@@ -82,6 +84,12 @@ export default new Router({
                     path: '/charts',
                     component: () => import(/* webpackChunkName: "chart" */ '../views/page/BaseCharts.vue'),
                     meta: { title: 'schart图表' }
+                },
+                {
+                    // vue-schart组件
+                    path: '/e-charts',
+                    component: () => import(/* webpackChunkName: "chart" */ '../views/page/ECharts.vue'),
+                    meta: { title: 'e-chart图表' }
                 },
                 {
                     // 拖拽列表组件

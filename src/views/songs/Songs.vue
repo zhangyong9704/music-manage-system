@@ -176,7 +176,7 @@
                     pageSize: 8,  //页面数量
                 },
                 pageTotal: 0,   //总页数
-                singerID: this.$route.params.id, //歌手id
+                singerID: this.$route.query.id, //歌手id
                 songQueryVo : {},//歌手查询条件
                 tableData: [],  //表格数据
                 multipleSelection: [],  //多选
@@ -201,7 +201,7 @@
         watch : {
             //watch中监听路由的变化，当路由变化时，重新调用created中的内容
             $route(to, from) {  //监听路由是否有变化
-                this.songQueryVo.singerId = this.$route.params.id;  //获取歌手id
+                this.songQueryVo.singerId = this.$route.query.id;  //获取歌手id
                 this.fetchData();
             }
         },
@@ -211,7 +211,7 @@
             }),
         },
         created() {
-            this.songQueryVo.singerId= this.$route.params.id; //获取歌手id
+            this.songQueryVo.singerId= this.$route.query.id; //获取歌手id
             this.fetchData();
         },
         methods: {
@@ -232,7 +232,7 @@
             //触发重置搜索按钮
             handleReset(){
                 this.songQueryVo = {};
-                this.songQueryVo.singerId= this.$route.params.id; //获取歌手id
+                this.songQueryVo.singerId= this.$route.query.id; //获取歌手id
                 this.fetchData();
             },
             // 删除操作

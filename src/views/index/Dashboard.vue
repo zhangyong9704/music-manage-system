@@ -36,8 +36,8 @@
                             <div class="grid-content grid-con-1">
                                 <i class="el-icon-lx-people grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">1234</div>
-                                    <div>用户访问量</div>
+                                    <div class="grid-num">{{singerCount}}</div>
+                                    <div>歌手总数量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -45,10 +45,10 @@
                     <el-col :span="8">
                         <el-card shadow="hover" :body-style="{padding: '0px'}">
                             <div class="grid-content grid-con-2">
-                                <i class="el-icon-lx-notice grid-con-icon"></i>
+                                <i class="el-icon-lx-hot grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">321</div>
-                                    <div>系统消息</div>
+                                    <div class="grid-num">{{songCount}}</div>
+                                    <div>歌曲总数量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -56,10 +56,10 @@
                     <el-col :span="8">
                         <el-card shadow="hover" :body-style="{padding: '0px'}">
                             <div class="grid-content grid-con-3">
-                                <i class="el-icon-lx-goods grid-con-icon"></i>
+                                <i class="el-icon-lx-crown grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">5000</div>
-                                    <div>数量</div>
+                                    <div class="grid-num">{{songListCount}}</div>
+                                    <div>歌单总数量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -97,12 +97,42 @@
         <el-row :gutter="20">
             <el-col :span="12">
                 <el-card shadow="hover">
-                    <schart ref="bar" class="schart" canvasId="bar" :options="options"></schart>
+                    <h3 class="mgb40">歌手国籍分布</h3>
+                    <ve-histogram :data="countList"></ve-histogram>
                 </el-card>
             </el-col>
             <el-col :span="12">
                 <el-card shadow="hover">
-                    <schart ref="line" class="schart" canvasId="line" :options="options2"></schart>
+                    <h3 class="mgb40">组合类型</h3>
+                    <ve-pie :data="chartData"></ve-pie>
+                </el-card>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="12">
+                <el-card shadow="hover">
+                    <h3 class="mgb40">自定义标题</h3>
+                    <ve-line :data="chartData"></ve-line>
+                </el-card>
+            </el-col>
+            <el-col :span="12">
+                <el-card shadow="hover">
+                    <h3 class="mgb40">自定义标题</h3>
+                    <ve-radar :data="chartData"></ve-radar>
+                </el-card>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="12">
+                <el-card shadow="hover">
+                    <h3 class="mgb40">自定义标题</h3>
+                    <ve-ring :data="chartData"></ve-ring>
+                </el-card>
+            </el-col>
+            <el-col :span="12">
+                <el-card shadow="hover">
+                    <h3 class="mgb40">自定义标题</h3>
+                    <ve-scatter :data="chartData"></ve-scatter>
                 </el-card>
             </el-col>
         </el-row>
@@ -110,13 +140,48 @@
 </template>
 
 <script>
-import Schart from 'vue-schart';
-import bus from '@/components/common/js/bus';
+import Index from '@/api/index';
 export default {
     name: 'dashboard',
     data() {
         return {
             name: localStorage.getItem('ms_username'),
+            songCount: -1,
+            singerCount: -1,
+            songListCount: -1,
+            countList: {  //歌手不同国籍分布图
+                columns: ['国籍','总数'],
+                rows: [
+                    {'国籍': '中国','总数': 56},
+                    {'国籍': '韩国','总数': 23},
+                    {'国籍': '日本','总数': 42},
+                    {'国籍': '美国','总数': 23},
+                    {'国籍': '新加坡','总数': 75},
+                    {'国籍': '意大利','总数': 63},
+                    {'国籍': '马来西亚','总数': 43},
+                    {'国籍': '西班牙','总数': 116}
+                ]
+            },
+            groupStyle: {
+                columns: ['性别','总数'],
+                rows: [
+                    {'性别': '女','总数': 0},
+                    {'性别': '男','总数': 0},
+                    {'性别': '组合','总数': 0},
+                    {'性别': '不明','总数': 0}
+                ]
+            },
+            chartData: {
+                columns: ['日期', '访问用户', '下单用户', '下单率'],
+                rows: [
+                    { '日期': '1/1', '访问用户': 1393, '下单用户': 1093, '下单率': 0.32 },
+                    { '日期': '1/2', '访问用户': 3530, '下单用户': 3230, '下单率': 0.26 },
+                    { '日期': '1/3', '访问用户': 2923, '下单用户': 2623, '下单率': 0.76 },
+                    { '日期': '1/4', '访问用户': 1723, '下单用户': 1423, '下单率': 0.49 },
+                    { '日期': '1/5', '访问用户': 3792, '下单用户': 3492, '下单率': 0.323 },
+                    { '日期': '1/6', '访问用户': 4593, '下单用户': 4293, '下单率': 0.78 }
+                ]
+            },
             todoList: [
                 {
                     title: '今天要修复100个bug',
@@ -173,71 +238,25 @@ export default {
                     value: 1065
                 }
             ],
-            options: {
-                type: 'bar',
-                title: {
-                    text: '最近一周各品类销售图'
-                },
-                xRorate: 25,
-                labels: ['周一', '周二', '周三', '周四', '周五'],
-                datasets: [
-                    {
-                        label: '家电',
-                        data: [234, 278, 270, 190, 230]
-                    },
-                    {
-                        label: '百货',
-                        data: [164, 178, 190, 135, 160]
-                    },
-                    {
-                        label: '食品',
-                        data: [144, 198, 150, 235, 120]
-                    }
-                ]
-            },
-            options2: {
-                type: 'line',
-                title: {
-                    text: '最近几个月各品类销售趋势图'
-                },
-                labels: ['6月', '7月', '8月', '9月', '10月'],
-                datasets: [
-                    {
-                        label: '家电',
-                        data: [234, 278, 270, 190, 230]
-                    },
-                    {
-                        label: '百货',
-                        data: [164, 178, 150, 135, 160]
-                    },
-                    {
-                        label: '食品',
-                        data: [74, 118, 200, 235, 90]
-                    }
-                ]
-            }
         };
-    },
-    components: {
-        Schart
     },
     computed: {
         role() {
             return this.name === 'admin' ? '超级管理员' : '普通用户';
         }
     },
-    // created() {
-    //     this.handleListener();
-    //     this.changeDate();
-    // },
-    // activated() {
-    //     this.handleListener();
-    // },
-    // deactivated() {
-    //     window.removeEventListener('resize', this.renderChart);
-    //     bus.$off('collapse', this.handleBus);
-    // },
+    created() {
+        this.getIndexCounts();
+    },
     methods: {
+        getIndexCounts() {
+            Index.indexCount().then(res=>{
+                this.singerCount = res.data.count.singerCount;
+                this.songCount = res.data.count.songCount;
+                this.songListCount = res.data.count.songListCount;
+            })
+        },
+
         changeDate() {
             const now = new Date().getTime();
             this.data.forEach((item, index) => {
@@ -245,20 +264,6 @@ export default {
                 item.name = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
             });
         }
-        // handleListener() {
-        //     bus.$on('collapse', this.handleBus);
-        //     // 调用renderChart方法对图表进行重新渲染
-        //     window.addEventListener('resize', this.renderChart);
-        // },
-        // handleBus(msg) {
-        //     setTimeout(() => {
-        //         this.renderChart();
-        //     }, 200);
-        // },
-        // renderChart() {
-        //     this.$refs.bar.renderChart();
-        //     this.$refs.line.renderChart();
-        // }
     }
 };
 </script>
@@ -368,9 +373,8 @@ export default {
     text-decoration: line-through;
     color: #999;
 }
-
-.schart {
-    width: 100%;
-    height: 300px;
+.mgb40{
+    margin-left: 40%;
+    margin-bottom: 10px
 }
 </style>

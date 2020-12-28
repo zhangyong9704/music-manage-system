@@ -63,11 +63,6 @@ export default {
                 },
                 {
                     icon: 'el-icon-lx-cascades',
-                    index: 'table',
-                    title: '基础表格'
-                },
-                {
-                    icon: 'el-icon-lx-cascades',
                     index: 'singer',
                     title: '歌手管理'
                 },
@@ -75,6 +70,11 @@ export default {
                     icon: 'el-icon-lx-cascades',
                     index:'song-list',
                     title: "歌单管理"
+                },
+                {
+                    icon: 'el-icon-lx-cascades',
+                    index: 'table',
+                    title: '基础表格'
                 },
                 {
                     icon: 'el-icon-lx-copy',
@@ -119,6 +119,11 @@ export default {
                     icon: 'el-icon-pie-chart',
                     index: 'charts',
                     title: 'schart图表'
+                },
+                {
+                    icon: 'el-icon-pie-chart',
+                    index: 'e-charts',
+                    title: 'e-chart图表'
                 },
                 {
                     icon: 'el-icon-rank',

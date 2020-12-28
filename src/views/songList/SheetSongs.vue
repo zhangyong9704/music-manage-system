@@ -170,7 +170,7 @@
             ImageCropper,PanThumb,SongsAudio
         },
         created() {
-            this.listSongsQueryVo.id= this.$route.params.id; //获取歌单id
+            this.listSongsQueryVo.id= this.$route.query.id; //获取歌单id
             this.fetchData();
         },
         data() {
@@ -181,7 +181,7 @@
                     pageSize: 8,  //页面数量
                 },
                 pageTotal: 0,   //总页数
-                songListId: this.$route.params.id, //歌单id
+                songListId: this.$route.query.id, //歌单id
                 listSongsQueryVo : {},//歌单-歌手查询条件
                 tableData: [],  //表格数据
                 multipleSelection: [],  //多选
@@ -206,7 +206,7 @@
         watch : {
             //watch中监听路由的变化，当路由变化时，重新调用created中的内容
             $route(to, from) {  //监听路由是否有变化
-                this.listSongsQueryVo.id= this.$route.params.id; //获取歌单id
+                this.listSongsQueryVo.id= this.$route.query.id; //获取歌单id
                 this.fetchData();
             }
         },
@@ -233,7 +233,7 @@
             //触发重置搜索按钮
             handleReset(){
                 this.listSongsQueryVo = {};
-                this.listSongsQueryVo.id= this.$route.params.id; //获取歌单id
+                this.listSongsQueryVo.id= this.$route.query.id; //获取歌单id
                 this.fetchData();
             },
             // 删除操作 todo

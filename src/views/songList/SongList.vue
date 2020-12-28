@@ -57,7 +57,7 @@
                 </el-table-column>
                 <el-table-column label="歌曲管理" align="center">
                     <template slot-scope="scope">
-                        <router-link :to="'/sheet-songs/'+scope.row.id">
+                        <router-link :to="{path:'/sheet-songs',query:{id:scope.row.id}}">
                             <el-button type="success" plain round icon="el-icon-position" size="mini">歌曲管理</el-button>
                         </router-link>
                     </template>

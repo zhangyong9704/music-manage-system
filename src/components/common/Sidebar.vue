@@ -73,6 +73,16 @@ export default {
                 },
                 {
                     icon: 'el-icon-lx-cascades',
+                    index: 'banner',
+                    title: 'Banner管理'
+                },
+                {
+                    icon: 'el-icon-lx-copy',
+                    index: 'dealt-with',
+                    title: '待办管理'
+                },
+                {
+                    icon: 'el-icon-lx-cascades',
                     index: 'table',
                     title: '基础表格'
                 },

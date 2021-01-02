@@ -344,7 +344,7 @@ export default {
 }
 
 .handle-input {
-    width: 300px;
+    width: 250px;
     display: inline-block;
 }
 .handle-add {
@@ -362,7 +362,7 @@ export default {
 }
 
 .mr10 {
-    margin-right: 12px;
+    margin-right: 6px;
 }
 .table-td-thumb {
     display: block;

@@ -68,7 +68,7 @@
                 <el-card shadow="hover" style="height:403px;">
                     <div slot="header" class="clearfix">
                         <span>待办事项</span>
-                        <el-button style="float: right; padding: 3px 0" type="text">添加</el-button>
+                        <el-button style="float: right; padding: 3px 0" type="text" @click="dealtWith">添加</el-button>
                     </div>
                     <el-table :show-header="false" :data="todoList" style="width:100%;">
                         <el-table-column width="40">
@@ -98,41 +98,56 @@
             <el-col :span="12">
                 <el-card shadow="hover">
                     <h3 class="mgb40">歌手国籍分布</h3>
-                    <ve-histogram :data="countList"></ve-histogram>
+                    <ve-histogram :data="singer_region" :data-zoom="dataZoom"
+                                  :settings="singerChartSettings"
+                                  :after-config="afterConfig" :toolbox="toolbox" :loading="true"
+                    ></ve-histogram>
                 </el-card>
             </el-col>
             <el-col :span="12">
                 <el-card shadow="hover">
-                    <h3 class="mgb40">组合类型</h3>
-                    <ve-pie :data="chartData"></ve-pie>
-                </el-card>
-            </el-col>
-        </el-row>
-        <el-row :gutter="20">
-            <el-col :span="12">
-                <el-card shadow="hover">
-                    <h3 class="mgb40">自定义标题</h3>
-                    <ve-line :data="chartData"></ve-line>
-                </el-card>
-            </el-col>
-            <el-col :span="12">
-                <el-card shadow="hover">
-                    <h3 class="mgb40">自定义标题</h3>
-                    <ve-radar :data="chartData"></ve-radar>
+                    <h3 class="mgb40">歌手组合类型</h3>
+                    <ve-pie :data="singer_type" :settings="singerTypeChartSettings"></ve-pie>
                 </el-card>
             </el-col>
         </el-row>
         <el-row :gutter="20">
             <el-col :span="12">
                 <el-card shadow="hover">
-                    <h3 class="mgb40">自定义标题</h3>
-                    <ve-ring :data="chartData"></ve-ring>
+                    <h3 class="mgb40">歌单高分榜</h3>
+                    <ve-line :data="song_list_score"
+                             :settings="songListScoreChartSettings"
+                             :extend="songListScoreChartExtend"
+                             :toolbox="toolbox" :loading="true"
+                    ></ve-line>
                 </el-card>
             </el-col>
             <el-col :span="12">
                 <el-card shadow="hover">
-                    <h3 class="mgb40">自定义标题</h3>
-                    <ve-scatter :data="chartData"></ve-scatter>
+                    <h3 class="mgb40">歌单风格分布</h3>
+                    <ve-histogram :data="song_list_type" :data-zoom="dataZoom"
+                                  :settings="songListChartSettings"
+                                  :after-config="afterConfig"
+                                  :toolbox="toolbox" :loading="true"
+                    ></ve-histogram>
+                </el-card>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="12">
+                <el-card shadow="hover">
+                    <h3 class="mgb40">用户性别比例</h3>
+                    <ve-ring :data="user_gender" :settings="userGenderChartSettings"></ve-ring>
+                </el-card>
+            </el-col>
+            <el-col :span="12">
+                <el-card shadow="hover">
+                    <h3 class="mgb40">用户地区分布</h3>
+                    <ve-scatter :data="user_region" :data-zoom="dataZoom"
+                                :settings="userChartSettings"
+                                :after-config="afterConfig"
+                                :loading="true"
+                    ></ve-scatter>
                 </el-card>
             </el-col>
         </el-row>
@@ -149,38 +164,70 @@ export default {
             songCount: -1,
             singerCount: -1,
             songListCount: -1,
-            countList: {  //歌手不同国籍分布图
-                columns: ['国籍','总数'],
-                rows: [
-                    {'国籍': '中国','总数': 56},
-                    {'国籍': '韩国','总数': 23},
-                    {'国籍': '日本','总数': 42},
-                    {'国籍': '美国','总数': 23},
-                    {'国籍': '新加坡','总数': 75},
-                    {'国籍': '意大利','总数': 63},
-                    {'国籍': '马来西亚','总数': 43},
-                    {'国籍': '西班牙','总数': 116}
-                ]
+            singer_region:[], //歌手不同国籍分布
+            dataZoom: [  //滚动条
+                {
+                    type: 'slider',
+                    start: 0,
+                    end: 70
+                }
+            ],
+            singerChartSettings : {  //歌手国籍分布别名设置
+                labelMap: {'count': '数量',},
+                legendName: {'数量': '歌手国籍分布数量'},
             },
-            groupStyle: {
-                columns: ['性别','总数'],
-                rows: [
-                    {'性别': '女','总数': 0},
-                    {'性别': '男','总数': 0},
-                    {'性别': '组合','总数': 0},
-                    {'性别': '不明','总数': 0}
-                ]
+            singer_type:[],  //歌手类型分布
+            singerTypeChartSettings : {  //歌手类型标签自定义设置
+                label:{
+                    normal:{
+                        formatter:params =>{
+                            return `组合类型: ${params.data.name}  数量: ${params.data.value}`
+                        }
+                    }
+                }
             },
-            chartData: {
-                columns: ['日期', '访问用户', '下单用户', '下单率'],
-                rows: [
-                    { '日期': '1/1', '访问用户': 1393, '下单用户': 1093, '下单率': 0.32 },
-                    { '日期': '1/2', '访问用户': 3530, '下单用户': 3230, '下单率': 0.26 },
-                    { '日期': '1/3', '访问用户': 2923, '下单用户': 2623, '下单率': 0.76 },
-                    { '日期': '1/4', '访问用户': 1723, '下单用户': 1423, '下单率': 0.49 },
-                    { '日期': '1/5', '访问用户': 3792, '下单用户': 3492, '下单率': 0.323 },
-                    { '日期': '1/6', '访问用户': 4593, '下单用户': 4293, '下单率': 0.78 }
-                ]
+            user_gender: [],  //用户性别分布
+            userGenderChartSettings : {  //用户性别标签自定义设置
+                label:{
+                    normal:{
+                        formatter:params =>{
+                            return `性别: ${params.data.name}  人数: ${params.data.value}`
+                        }
+                    }
+                }
+            },
+            user_region : [],  //用户地区分布
+            userChartSettings : {  //用户地区分布别名设置
+                labelMap: { 'count': '数量', },
+                legendName: { '数量': '用户地区分布数量' }
+            },
+            song_list_type :[], //歌单风格分布
+            songListChartSettings : {  //歌单类型分布别名设置
+                labelMap: { 'count': '歌单数量', },
+                legendName: { '歌单数量': '歌单分布数量' },
+            },
+            song_list_score :[],  //歌单高分榜分布
+            songListScoreChartSettings : {  //歌单高分分布别名设置
+                labelMap: {'score': '歌单评分',},
+            },
+            songListScoreChartExtend: {  //X轴数值过长截取设置
+                xAxis: { // x轴字体斜显示
+                    axisLabel: {
+                        margin: 15,
+                        interval: 0,
+                        rotate: 30,
+                        formatter: name => {
+                            return name.length<=5?name:name.substring(0,4)+"...";
+                        }
+                    },
+                    triggerEvent: true
+                }
+            },
+            toolbox : {   //工具箱
+                feature: {
+                    magicType: { type: ['line', 'bar'] },
+                    saveAsImage: {}
+                }
             },
             todoList: [
                 {
@@ -246,15 +293,79 @@ export default {
         }
     },
     created() {
-        this.getIndexCounts();
+        this.init();
     },
     methods: {
+        /*获得主页歌手、歌曲、歌单数量*/
         getIndexCounts() {
             Index.indexCount().then(res=>{
                 this.singerCount = res.data.count.singerCount;
                 this.songCount = res.data.count.songCount;
                 this.songListCount = res.data.count.songListCount;
             })
+        },
+
+        /*初始化图标总请求路线*/
+        init(){
+            this.getIndexCounts();
+            this.getRegionalDistributionOfSingers();  //歌手国籍分布
+            this.getCombinationTypeOfSingers();   //歌手类型分布
+            this.getHighScoreSongList();  //歌单高分榜(前十)
+            this.getRegionalDistributionOfSongList();   //歌单风格
+            this.getGenderDistributionOfUsers();    //用户性别分布
+            this.getRegionalDistributionOfUsers();  //用户地区分布
+        },
+
+        /*获取歌手国际地区分布*/
+        getRegionalDistributionOfSingers(){
+            Index.singerRegion().then(res=>{
+                this.singer_region = res.data.singer_region;
+            })
+        },
+
+        /*获取歌手类型分布*/
+        getCombinationTypeOfSingers(){
+            Index.singersCombinationType().then(res=>{
+                this.singer_type = res.data.singer_type;
+            })
+        },
+
+        /*歌单类型分布*/
+        getRegionalDistributionOfSongList(){
+            Index.songListRegionalDistribution().then(res=>{
+                this.song_list_type = res.data.song_list_type;
+            })
+        },
+
+        /*歌单高分榜 前十*/
+        getHighScoreSongList(){
+            Index.songListHighScore().then(res=>{
+                this.song_list_score = res.data.song_list_score;
+            })
+        },
+
+        /*用户性别比例分布*/
+        getGenderDistributionOfUsers(){
+            Index.usersGenderDistribution().then(res=>{
+                this.user_gender = res.data.user_gender;
+            })
+        },
+
+        /*用户地区分布*/
+        getRegionalDistributionOfUsers(){
+          Index.usersRegionalDistribution().then(res=>{
+              this.user_region = res.data.user_region;
+          })
+        },
+
+        afterConfig(options){
+            options.xAxis[0].axisLabel = {rotate:-45};
+            return options;
+        },
+
+        // 待办消息跳转事件
+        dealtWith(){
+            this.$router.push('/dealt-with');
         },
 
         changeDate() {

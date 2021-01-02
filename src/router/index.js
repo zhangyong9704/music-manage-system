@@ -17,7 +17,7 @@ export default new Router({
                 {
                     path: '/dashboard',
                     component: () => import(/* webpackChunkName: "dashboard" */ '../views/index/Dashboard.vue'),
-                    meta: { title: '系统首页' }
+                    meta: { title: '系统首页' , noCache: true }
                 },
                 {
                     path: '/icon',
@@ -29,6 +29,7 @@ export default new Router({
                     component: () => import(/* webpackChunkName: "table" */ '../views/page/BaseTable.vue'),
                     meta: { title: '基础表格' }
                 },
+
                 {
                     path: '/singer',
                     component: () => import(/* webpackChunkName: "table" */ '../views/singer/Singer.vue'),
@@ -43,13 +44,23 @@ export default new Router({
                 {
                     path: '/song-list',
                     component: () => import(/* webpackChunkName: "table" */ '../views/songList/SongList.vue'),
-                    meta: { title: '歌单管理' }
+                    meta: { title: '歌单管理', noCache: true  }
                 },
                 {
                     name: 'sheet-songs',
                     path: '/sheet-songs',
                     component: () => import(/* webpackChunkName: "table" */ '../views/songList/SheetSongs.vue'),
                     meta: { title: '歌单-歌曲管理', noCache: true },
+                },
+                {
+                    path: '/banner',
+                    component: () => import(/* webpackChunkName: "table" */ '../views/banner/Banner.vue'),
+                    meta: { title: 'Banner管理', noCache: true  }
+                },
+                {
+                    path: '/dealt-with',
+                    component: () => import(/* webpackChunkName: "table" */ '../views/dealtWith/DealtWithTabs.vue'),
+                    meta: { title: '待办管理', noCache: true  }
                 },
                 {
                     path: '/tabs',

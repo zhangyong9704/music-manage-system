@@ -20,6 +20,7 @@
                         effect="dark"
                         :content="message?`有${message}条未读消息`:`消息中心`"
                         placement="bottom"
+                        @click="dealtWith"
                     >
                         <router-link to="/tabs">
                             <i class="el-icon-bell"></i>
@@ -104,7 +105,12 @@ export default {
                 }
             }
             this.fullscreen = !this.fullscreen;
-        }
+        },
+
+        // 待办消息跳转事件
+        dealtWith(){
+            this.$router.push('/dealt-with');
+        },
     },
     mounted() {
         if (document.body.clientWidth < 1500) {

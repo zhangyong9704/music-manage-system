@@ -3,7 +3,7 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 新增列表
+                    <i class="el-icon-lx-cascades"></i> Banner列表
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
@@ -35,11 +35,16 @@
                         <el-tag type='primary'>{{scope.row.linkUrl}}</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column label="头像" align="center">
+                <el-table-column label="序号" align="center" width="60">
+                    <template slot-scope="scope">
+                        <el-tag type='success'>{{scope.row.sort}}</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="封面" align="center">
                     <template slot-scope="scope">
                         <el-image class="table-td-thumb" fit="contain"
-                                  :src="scope.row.imageUrl"
-                                  :preview-src-list="[scope.row.imageUrl]">
+                                  :src="HOST+scope.row.imageUrl"
+                                  :preview-src-list="[HOST+scope.row.imageUrl]">
                             <div slot="error" class="image-slot">
                                 <i class="el-icon-picture-outline"></i>
                             </div>
@@ -96,52 +101,25 @@
             </div>
         </div>
 
-        <!--添加编辑歌手-->
+        <!--添加编辑Banner-->
         <el-dialog :title="title" :visible.sync="isVisible" width="40%" center :show-close="!isEditCancel">
-            <el-form :model="singerForm" ref="singerForm" label-width="80px">
-                <el-form-item prop="name" label="歌手名称" size="mini">
-                    <el-input v-model="singerForm.name" placeholder="歌手名"
-                    ></el-input>
+            <el-form :model="bannerForm" ref="singerForm" label-width="80px">
+                <el-form-item prop="title" label="标题" size="mini">
+                    <el-input v-model="bannerForm.title" placeholder="Banner名"></el-input>
                 </el-form-item>
-                <el-form-item label="性别" size="mini">
-                    <el-radio-group v-model="singerForm.sex">
-                        <el-radio  :label="0" >女</el-radio>
-                        <el-radio  :label="1" >男</el-radio>
-                        <el-radio  :label="2" >组合</el-radio>
-                        <el-radio  :label="3" >不明</el-radio>
-                    </el-radio-group>
+                <el-form-item prop="linkUrl" label="链接地址" size="mini">
+                    <el-input v-model="bannerForm.linkUrl" placeholder="序号"></el-input>
                 </el-form-item>
-                <el-form-item prop="birth" label="生日" size="mini">
-                    <el-date-picker type="date" placeholder="出生日期"
-                                    v-model="singerForm.birth"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    style="width:100%"
-                    ></el-date-picker>
+                <el-form-item prop="sort" label="序号" size="mini">
+                    <el-input v-model.number.trim="bannerForm.sort" placeholder="序号"></el-input>
                 </el-form-item>
-                <el-form-item prop="location" label="地区" size="mini">
-                    <el-input v-model="singerForm.location" placeholder="地区"></el-input>
-                </el-form-item>
-                <el-form-item prop="introduction" label="简介" size="mini">
-                    <el-input v-model="singerForm.introduction"
-                              placeholder="简介" type="textarea"
-                              maxlength="240" show-word-limit>
-                    </el-input>
-                </el-form-item>
-                <!-- 讲师头像 -->
-                <el-form-item label="歌手头像">
-                    <!-- 头衔缩略图 -->
-                    <pan-thumb :image="tempSrc"/>
-                    <!-- 文件上传按钮 -->
-                    <el-button type="primary" icon="el-icon-upload" @click="imageCropperShow=true">更换头像
-                    </el-button>
-                    <!--
-                    v-show：是否显示上传组件
-                    :key：类似于id，如果一个页面多个图片上传控件，可以做区分
-                    :url：后台上传的url地址
-                    @close：关闭上传组件
-                    @crop-upload-success：上传成功后的回调 -->
-                    <image-cropper v-show="imageCropperShow" :width="300" :height="300" :key="imageCropperKey"
-                                   :url="uploadURL" field="file" @close="close" @crop-upload-success="cropSuccess"/>
+                <el-divider></el-divider>
+                <el-form-item label="Banner">
+                    <el-upload :action="uploadURL" :on-remove="handleRemove" ref="upload" list-type="picture"
+                               :on-success="handleSuccess" :limit="1" :file-list="fileList" >
+                        <el-button size="small" type="primary">上传Banner</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传png/jpg文件，且不超过2M</div>
+                    </el-upload>
                 </el-form-item>
             </el-form>
             <span slot="footer">
@@ -153,12 +131,10 @@
 </template>
 
 <script>
-    import Singer from '@/api/singer';
     import Banner from '@/api/banner';
     import { getSexType } from '@/api/common/commonUtils';
     import ImageCropper from '@/components/ImageCropper'
     import PanThumb from '@/components/PanThumb'
-    import banner from '../../api/banner';
     export default {
         name: 'singer',
         components: {
@@ -181,14 +157,11 @@
                 title :'',   //新增编辑标题
                 flags : '',  //区分新增和编辑
                 isEditCancel: false, //用于编辑时存储上文件路径
-                singerForm:{},   //歌手弹框对象
+                bannerForm:{},   //Banner弹框对象
+                fileList: [],//上传文件列表
                 id: -1,
                 HOST:this.$store.state.HOST,
-                uploadURL:this.$store.state.UPLOAD_SINGER_COVER,  //歌手上传路径
-                defaultSrc: "https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg",  //默认背景
-                tempSrc:'',
-                imageCropperShow : false,  //上传时弹框组件是否显示
-                imageCropperKey : 0 ,  //
+                uploadURL:this.$store.state.UPLOAD_BANNER_COVER,  //Banner上传路径
             };
         },
         created() {
@@ -224,7 +197,7 @@
                 this.$confirm('确定要删除吗？', '提示', { // 二次确认删除
                     type: 'warning'
                 }).then(() => {
-                    Singer.deleteSingerByID(row.id).then(res=>{
+                    Banner.deleteBannerByID(row.id).then(res=>{
                         if (res && res.code===200){
                             this.$message.success(res.message);
                             this.fetchData();
@@ -245,7 +218,7 @@
                 for (let i = 0; i < this.multipleSelection.length; i++) {
                     str.push(this.multipleSelection[i].id);
                 }
-                Singer.deleteMultipleSelection(str).then(res=>{
+                Banner.deleteMultipleSelection(str).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);
                         this.multipleSelection = [];
@@ -255,71 +228,67 @@
                     this.$message.error(err.message);
                 })
             },
-
             //新增和编辑统一公共统一调用入口
             addAndEditCommonEntrance(identification,index,row){
                 if ("add"===identification){ //调用添加方法
-                    this.title = '添加歌手信息'
+                    this.title = '添加Banner信息'
                     this.flags = 'add'
-                    this.addSinger()
+                    this.handleAddBanners()
                 }
                 if ('edit'===identification){  //调用编辑的方法
-                    this.title = '编辑歌手信息'
+                    this.title = '编辑Banner信息'
                     this.flags = 'edit'
-                    this.handleEdit(index, row)
+                    this.handleEditBanner(index, row)
                 }
             },
-
             //新增和保存的统一路径调用入口
             saveCommonEntrance(identification,index,row){
                 if ("add"===identification){ //调用添加方法
-                    this.confirmAddSinger()
+                    this.confirmAddBanner()
                 }
                 if ('edit'===identification){  //调用编辑的方法
-                    this.saveEdit();
+                    this.saveEditBanner();
                 }
             },
             // 编辑操作
-            handleEdit(index, row) {
-                this.singerForm = {}
-                this.singerForm = row
-                this.tempSrc = this.getImageUrl(row.pic); //处理图像路径问题
+            handleEditBanner(index, row) {
+                this.bannerForm = {}
+                this.bannerForm = row
+                this.fileList = [{ name : row.title + row.imageUrl.substring(row.imageUrl.lastIndexOf(".")), url : this.getImageUrl(row.imageUrl) }] //如果多个文件需要遍历(这里限制只能上传一个)
                 this.isEditCancel = false
                 this.isVisible = true;
             },
             // 保存编辑
-            saveEdit() {
-                Singer.updateSinger(this.singerForm).then(res=>{
+            saveEditBanner() {
+                Banner.updateBanner(this.bannerForm).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);
                         this.isVisible = false;
-                        this.singerForm={};
+                        this.bannerForm={};
                     }
                 }).catch(err=>{
                     this.$message.error(err.message);
                 })
             },
-            //新增歌手
-            addSinger(){
-                this.tempSrc='';
-                this.singerForm = {}
-                this.tempSrc = this.defaultSrc;
+            //新增Banner
+            handleAddBanners(){
+                this.bannerForm = {}
+                this.fileList = [];
                 this.isVisible = true;
             },
-            //新增歌手确定保存
-            confirmAddSinger(){
-                Singer.saveAddSinger(this.singerForm).then(res=>{
+            //新增Banner确定保存
+            confirmAddBanner(){
+                Banner.saveAddBanner(this.bannerForm).then(res=>{
                     if (res && res.code===200){
                         this.$message.success(res.message);
                         this.isVisible = false;
-                        this.singerForm = {};
+                        this.bannerForm = {};
                         this.fetchData();
                     }
                 }).catch(err=>{
                     this.$message.success(err.message);
                 })
             },
-
             //取消按钮
             cancel(){
                 this.isVisible = false
@@ -330,35 +299,33 @@
                 this.$set(this.query, 'pageIndex', val);
                 this.fetchData();
             },
-            //图片上传成功
-            cropSuccess(data){ //上传保存成功后调用  data 直接进行了封装，==》response.data
-                if (data.path){
-                    if ('edit'===this.flags){   //编辑功能删除先前图片
-                        //todo 删除对应图片,上次保存图片的位置
-                        Singer.deletePreviousCover(this.singerForm.pic).then((res)=>{
-                            if (res && res.code ===200){
-                                this.$message.success(res.message);
-                            }
-                        }).catch(err=>{
-                            this.$message.success(err.message);
-                        })
-                    }
-                    this.imageCropperShow = false; //先关闭弹窗
-                    this.singerForm.pic = data.path;
-                    this.tempSrc = this.getImageUrl(data.path);
-                    // 上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
-                    this.imageCropperKey = this.imageCropperKey + 1 ;
-                    this.isEditCancel = true
-                }
-            },
-            //上传图片关闭组件显示
-            close(){
-                this.imageCropperShow = false;
-                this.imageCropperKey = this.imageCropperKey + 1 ;  //保证当前组件不会进行复用，显示已经上传成功
-            },
+
             //处理图像返回地址
             getImageUrl(url){
                 return this.$store.state.HOST+url;
+            },
+
+            /*==============上传图片删除操作=======================*/
+            handleRemove(file, fileList){
+                Banner.deletePreviousCover(this.bannerForm.imageUrl).then(res =>{
+                    if (res && res.code ===200){
+                        this.$message.success(res.message);
+                        this.bannerForm.imageUrl = ''
+                    }
+                }).catch(err=>{
+                    this.$message.error(err.message);
+                    this.bannerForm.imageUrl = ''
+                })
+            },
+
+            handleSuccess(response, file, fileList){
+                if (response && response.code===200){
+                    this.$message.success(response.message);
+                    this.bannerForm.imageUrl = response.data.path  //获取上传后的文件保存地址
+                }else{
+                    this.$message.error(response.message);
+                    this.bannerForm.imageUrl = ''
+                }
             },
         }
     };

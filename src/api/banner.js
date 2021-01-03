@@ -26,11 +26,11 @@ export default {
     },
 
     //确定保存新增歌手信息
-    saveAddBanner(Banner) {
+    saveAddBanner(banner) {
         return request({
-            url:`/Banner/add`,
+            url:`/banner/add`,
             method:'post',
-            data:Banner
+            data:banner
         })
     },
 
@@ -45,24 +45,24 @@ export default {
     //批量删除操作
     deleteMultipleSelection(params=[]){
         return request({
-            url:`/Banner/deleteBatch/${params}`,
+            url:`/banner/deleteBatch/${params}`,
             method:'delete',
         })
     },
 
-    //修改歌手信息
-    updateBanner(Banner){
+    //修改Banner信息
+    updateBanner(banner){
         return request({
-            url:`/Banner/update`,
+            url:`/banner/update`,
             method:'put',
-            data:Banner
+            data:banner
         })
     },
 
     //删除上次图片
     deletePreviousCover(filePath){
         return request({
-            url:`/Banner/delete-upload`,
+            url:`/banner/delete-upload`,
             method:'post',
             params: {
                 filePath

@@ -67,12 +67,12 @@ export default {
                     title: '歌手管理'
                 },
                 {
-                    icon: 'el-icon-lx-cascades',
+                    icon: 'el-icon-lx-emoji',
                     index:'song-list',
                     title: "歌单管理"
                 },
                 {
-                    icon: 'el-icon-lx-cascades',
+                    icon: 'el-icon-lx-calendar',
                     index: 'banner',
                     title: 'Banner管理'
                 },

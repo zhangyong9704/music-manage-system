@@ -16,7 +16,7 @@
     <img src="https://img.shields.io/badge/%24-donate-ff69b4.svg" alt="donate">
   </a>
 
-The web management system solution based on Vue2 and Element-UI。[live demo](https://lin-xin.gitee.io/example/work/)
+The web management system solution based on Vue2 and Element-UI。[live demo]()
 
 ## Donation
 
@@ -65,7 +65,7 @@ The scheme as a set of multi-function background frame templates, suitable for m
 
 ### vue-schart
 
-Vue.js wrapper for sChart.js. Github : [vue-schart](https://github.com/linxin/vue-schart)
+Vue.js wrapper for sChart.js. Github : [vue-schart]()
 
 ```html
 <template>
@@ -141,9 +141,9 @@ The first step to remove the component of the routing. Enter 'src/router/index.j
 
 ```JavaScript
 {
-    path: '/editor',
+    path: '/editor'
     component: resolve => require(['../components/page/VueEditor.vue'], resolve)
-},
+}
 ```
 
 Second,delete the component files. Enter 'src/components/page/' and delete 'VueEditor.vue' file.
@@ -152,9 +152,9 @@ The third step is to delete the entry. Enter 'src/components/common/Sidebar.vue'
 
 ```js
 {
-	index: 'editor',
+	index: 'editor'
 	title: '富文本编辑器'
-},
+}
 ```
 
 Finally, uninstall this component.
@@ -185,12 +185,12 @@ Finally,enter 'src/components/common/Sidebar.vue' and find el-menu Tags,delete '
 
 ### Default theme
 
-![Image text](https://github.com/lin-xin/manage-system/raw/master/screenshots/wms1.png)
+![Image text]()
 
 ### Green theme
 
-![Image text](https://github.com/lin-xin/manage-system/raw/master/screenshots/wms2.png)
+![Image text]()
 
 ## License
 
-[MIT](https://github.com/lin-xin/vue-manage-system/blob/master/LICENSE)
+[MIT]()

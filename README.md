@@ -16,11 +16,9 @@
     <img src="https://img.shields.io/badge/%24-donate-ff69b4.svg" alt="donate">
   </a>
 
-基于 Vue + Element UI 的后台管理系统解决方案。[线上地址](https://lin-xin.gitee.io/example/work/)
+基于 Vue + Element UI 的后台管理系统解决方案。
 
-> React + Ant Design 的版本正在开发中，仓库地址：[react-manage-system](https://github.com/lin-xin/react-manage-system)
-
-[English document](https://github.com/lin-xin/manage-system/blob/master/README_EN.md)
+[English document]()
 
 ## 项目截图
 
@@ -38,9 +36,9 @@
 
 ## 赞赏
 
-请作者喝杯咖啡吧！(微信号：linxin_20)
+请作者喝杯咖啡吧！(微信号：)
 
-![微信扫一扫](https://lin-xin.gitee.io/images/weixin.jpg)
+![微信扫一扫]()
 
 ## 特别鸣谢
 
@@ -152,9 +150,9 @@ vue.js 封装 sChart.js 的图表组件。访问地址：[vue-schart](https://gi
 ```JavaScript
 {
     // 富文本编辑器组件
-    path: '/editor',
+    path: '/editor'
     component: resolve => require(['../components/page/VueEditor.vue'], resolve)
-},
+}
 ```
 
 第二步：删除引入该组件的文件。在目录 src/components/page/ 删除 VueEditor.vue 文件。
@@ -163,9 +161,9 @@ vue.js 封装 sChart.js 的图表组件。访问地址：[vue-schart](https://gi
 
 ```js
 {
-	index: 'editor',
+	index: 'editor'
 	title: '富文本编辑器'
-},
+}
 ```
 
 第四步：卸载该组件。执行以下命令：
@@ -195,4 +193,4 @@ import 'element-ui/lib/theme-default/index.css'; // 默认主题
 ## License
 
 [MIT](https://github.com/lin-xin/vue-manage-system/blob/master/LICENSE)
-"# music-manage-system-" 
+"# music-manage-system" 
